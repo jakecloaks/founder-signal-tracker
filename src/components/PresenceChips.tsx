@@ -14,12 +14,12 @@ function Chip({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium ${
+      className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-medium ${
         active
           ? weak
-            ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-            : 'bg-zinc-800 text-zinc-300 border border-zinc-700/60'
-          : 'bg-transparent text-[#444] border border-[#1f1f1f]'
+            ? 'bg-amber-50 text-amber-700 border-amber-200'
+            : 'bg-stone-100 text-stone-700 border-stone-200'
+          : 'bg-stone-50 text-stone-400 border-stone-200'
       }`}
     >
       <Icon className="h-2.5 w-2.5 shrink-0" />

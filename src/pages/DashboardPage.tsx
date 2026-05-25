@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Building2, Flame, Target, Radar } from 'lucide-react'
+import { Building2, Flame, Target, Radar, TrendingUp, DollarSign } from 'lucide-react'
 import {
   DEFAULT_SEARCH,
   searchBusinesses,
@@ -21,7 +21,28 @@ import { BusinessCardSkeleton } from '../components/BusinessCardSkeleton'
 import { BusinessDetailModal } from '../components/BusinessDetailModal'
 import { MapsResultsPanel } from '../components/MapsResultsPanel'
 import { HotLeadsFeed } from '../components/HotLeadsFeed'
+import { UpgradeGate } from '../components/UpgradeGate'
+import { UpgradeModal } from '../components/UpgradeModal'
+import { useCredits } from '../hooks/useCredits'
+import { useSavedLeads } from '../hooks/useSavedLeads'
 import type { BusinessFilterKey, BusinessFilters, LocalBusiness } from '../types'
+
+const FREE_RESULTS_LIMIT = 3
+
+function estimateOpportunityValue(businesses: LocalBusiness[], serviceType: string) {
+  const highFit = businesses.filter((b) => b.fitScore >= 65).length
+  const svc = serviceType.toLowerCase()
+  let min = 1500, max = 5000
+  if (svc.includes('website') || svc.includes('redesign')) { min = 2500; max = 8000 }
+  else if (svc.includes('seo')) { min = 1000; max = 4000 }
+  else if (svc.includes('social')) { min = 800; max = 3000 }
+  else if (svc.includes('ads') || svc.includes('ppc')) { min = 1500; max = 6000 }
+  return { min: highFit * min, max: highFit * max }
+}
+
+function formatMoney(n: number) {
+  return n >= 1000 ? `$${Math.round(n / 1000)}k` : `$${n}`
+}
 
 export function DashboardPage() {
   const [industry, setIndustry] = useState(DEFAULT_SEARCH.industry)
@@ -36,6 +57,10 @@ export function DashboardPage() {
   const [listView, setListView] = useState(true)
   const [flashIds, setFlashIds] = useState<Set<string>>(new Set())
   const [initialized, setInitialized] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+
+  const credits = useCredits()
+  const savedLeadsHook = useSavedLeads()
 
   const runSearch = useCallback(async (ind: string, loc: string, svc: string) => {
     setScanning(true)
@@ -50,6 +75,15 @@ export function DashboardPage() {
       setScanning(false)
     }
   }, [])
+
+  const handleSearch = useCallback(async (ind: string, loc: string, svc: string) => {
+    if (!credits.hasCredits) {
+      setShowUpgradeModal(true)
+      return
+    }
+    credits.useCredit()
+    await runSearch(ind, loc, svc)
+  }, [credits, runSearch])
 
   useEffect(() => {
     if (!initialized) {
@@ -100,29 +134,31 @@ export function DashboardPage() {
       [...businesses]
         .sort((a, b) => b.fitScore - a.fitScore)
         .slice(0, 4)
-        .map((b) => ({
-          id: b.id,
-          name: b.name,
-          angle: b.outreachAngle,
-          fitScore: b.fitScore,
-          contactMethod: b.bestContactMethod,
-          business: b,
-        })),
+        .map((b) => ({ id: b.id, name: b.name, angle: b.outreachAngle, fitScore: b.fitScore, contactMethod: b.bestContactMethod, business: b })),
     [businesses]
   )
 
+  const opportunityValue = useMemo(
+    () => estimateOpportunityValue(businesses, serviceType),
+    [businesses, serviceType]
+  )
+
+  const isLocked = !credits.hasCredits
+  const visibleResults = isLocked ? filtered.slice(0, FREE_RESULTS_LIMIT) : filtered
+  const lockedResults = isLocked ? filtered.slice(FREE_RESULTS_LIMIT) : []
+
   return (
-    <div className="flex min-h-screen bg-[#0a0a0a]">
-      <Sidebar />
+    <div className="flex min-h-screen bg-stone-50">
+      <Sidebar credits={credits.credits} savedCount={savedLeadsHook.savedLeads.length} />
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Mobile header */}
-        <div className="flex items-center gap-2 border-b border-[#1c1c1c] px-4 py-3 md:hidden">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-600">
+        <div className="flex items-center gap-2 border-b border-stone-200 bg-white px-4 py-3 md:hidden">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-600 shadow-sm">
             <Radar className="h-3.5 w-3.5 text-white" />
           </div>
-          <span className="text-sm font-semibold text-white">SignalScope</span>
-          <Link to="/" className="ml-auto text-xs text-[#444] hover:text-[#888]">
+          <span className="text-sm font-bold text-stone-900">SignalScope</span>
+          <Link to="/" className="ml-auto text-xs text-stone-400 hover:text-stone-700 transition-colors">
             Home
           </Link>
         </div>
@@ -137,7 +173,7 @@ export function DashboardPage() {
         />
 
         <LocalBusinessSearch
-          onSearch={runSearch}
+          onSearch={handleSearch}
           loading={scanning}
           initialIndustry={industry}
           initialLocation={location}
@@ -145,44 +181,51 @@ export function DashboardPage() {
         />
 
         <main className="flex-1 overflow-auto">
-          {/* Compact stats strip */}
+          {/* Stats + opportunity value strip */}
           {!scanning && businesses.length > 0 && (
-            <div className="flex items-center gap-0 border-b border-[#1c1c1c]">
-              <div className="flex items-center gap-2.5 border-r border-[#1c1c1c] px-5 py-3">
-                <Building2 className="h-3.5 w-3.5 text-[#444]" />
-                <span className="text-xs text-[#555]">Scanned</span>
-                <span className="text-sm font-bold tabular-nums text-[#ccc]">{stats.total}</span>
+            <div className="flex items-center gap-0 border-b border-stone-200 bg-white overflow-x-auto">
+              <div className="flex items-center gap-2 border-r border-stone-100 px-5 py-3 shrink-0">
+                <Building2 className="h-3.5 w-3.5 text-stone-400" />
+                <span className="text-xs text-stone-500">Scanned</span>
+                <span className="text-sm font-bold tabular-nums text-stone-900">{stats.total}</span>
               </div>
-              <div className="flex items-center gap-2.5 border-r border-[#1c1c1c] px-5 py-3">
+              <div className="flex items-center gap-2 border-r border-stone-100 px-5 py-3 shrink-0">
                 <Flame className="h-3.5 w-3.5 text-orange-500" />
-                <span className="text-xs text-[#555]">High fit ≥70</span>
-                <span className="text-sm font-bold tabular-nums text-orange-400">{stats.hot}</span>
+                <span className="text-xs text-stone-500">High fit ≥70</span>
+                <span className="text-sm font-bold tabular-nums text-orange-600">{stats.hot}</span>
               </div>
-              <div className="flex items-center gap-2.5 px-5 py-3">
+              <div className="flex items-center gap-2 border-r border-stone-100 px-5 py-3 shrink-0">
                 <Target className="h-3.5 w-3.5 text-indigo-500" />
-                <span className="text-xs text-[#555]">Avg fit</span>
-                <span className="text-sm font-bold tabular-nums text-indigo-300">{stats.avg}</span>
+                <span className="text-xs text-stone-500">Avg fit</span>
+                <span className="text-sm font-bold tabular-nums text-indigo-700">{stats.avg}</span>
               </div>
+              {opportunityValue.min > 0 && (
+                <div className="flex items-center gap-2 px-5 py-3 shrink-0">
+                  <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
+                  <span className="text-xs text-stone-500">Est. opportunity</span>
+                  <span className="text-sm font-bold tabular-nums text-emerald-700">
+                    {formatMoney(opportunityValue.min)}–{formatMoney(opportunityValue.max)}
+                  </span>
+                </div>
+              )}
             </div>
           )}
 
           <div className="grid xl:grid-cols-3">
-            {/* Main results panel */}
-            <div className="min-w-0 xl:col-span-2 xl:border-r xl:border-[#1c1c1c]">
+            {/* Main results */}
+            <div className="min-w-0 xl:col-span-2 xl:border-r xl:border-stone-200">
               {/* Toolbar */}
-              <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#1c1c1c] bg-[#0a0a0a] px-4 py-2 sm:px-5">
+              <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-stone-200 bg-white/95 backdrop-blur-sm px-4 py-2 sm:px-5">
                 <BusinessFiltersBar
                   filters={filters}
                   onChange={(key: BusinessFilterKey) => setFilters({ active: key })}
                 />
-                <div className="flex shrink-0 rounded-md border border-[#1c1c1c] p-0.5 text-xs">
+                <div className="flex shrink-0 rounded-lg border border-stone-200 p-0.5 text-xs shadow-sm">
                   <button
                     type="button"
                     onClick={() => setListView(true)}
                     className={`rounded px-2.5 py-1.5 font-medium transition-colors ${
-                      listView
-                        ? 'bg-indigo-500/15 text-indigo-300'
-                        : 'text-[#555] hover:text-[#999]'
+                      listView ? 'bg-indigo-50 text-indigo-700' : 'text-stone-500 hover:text-stone-700'
                     }`}
                   >
                     List
@@ -191,9 +234,7 @@ export function DashboardPage() {
                     type="button"
                     onClick={() => setListView(false)}
                     className={`rounded px-2.5 py-1.5 font-medium transition-colors ${
-                      !listView
-                        ? 'bg-indigo-500/15 text-indigo-300'
-                        : 'text-[#555] hover:text-[#999]'
+                      !listView ? 'bg-indigo-50 text-indigo-700' : 'text-stone-500 hover:text-stone-700'
                     }`}
                   >
                     Cards
@@ -203,7 +244,7 @@ export function DashboardPage() {
 
               {/* Results info */}
               {!scanning && businesses.length > 0 && (
-                <div className="px-4 py-2 sm:px-5">
+                <div className="px-4 pt-3 sm:px-5">
                   <MapsResultsPanel
                     industry={industry}
                     location={location}
@@ -214,22 +255,36 @@ export function DashboardPage() {
                 </div>
               )}
 
+              {/* Credit warning */}
+              {!scanning && isLocked && filtered.length > FREE_RESULTS_LIMIT && (
+                <div className="mx-4 mb-2 flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 sm:mx-5">
+                  <p className="text-xs text-amber-800">
+                    Showing <span className="font-bold">3 of {filtered.length}</span> results — no searches left.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowUpgradeModal(true)}
+                    className="shrink-0 rounded-md bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-500 transition-colors"
+                  >
+                    Upgrade
+                  </button>
+                </div>
+              )}
+
               {/* Results */}
               {scanning ? (
-                <div className="divide-y divide-[#161616]">
+                <div>
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="px-4 py-3 sm:px-5">
-                      <BusinessCardSkeleton />
-                    </div>
+                    <BusinessCardSkeleton key={i} />
                   ))}
                 </div>
               ) : filtered.length === 0 ? (
-                <div className="px-5 py-16 text-center text-sm text-[#444]">
-                  No businesses match your filters.
+                <div className="px-5 py-16 text-center">
+                  <p className="text-sm text-stone-400">No businesses match your filters.</p>
                 </div>
               ) : listView ? (
                 <div>
-                  {filtered.map((business, i) => (
+                  {visibleResults.map((business, i) => (
                     <BusinessCard
                       key={business.id}
                       business={business}
@@ -237,20 +292,56 @@ export function DashboardPage() {
                       index={i}
                       liveFlash={flashIds.has(business.id)}
                       onClick={() => setSelected(business)}
+                      savedLeadsHook={savedLeadsHook}
                     />
                   ))}
+                  {lockedResults.length > 0 && (
+                    <UpgradeGate
+                      lockedCount={lockedResults.length}
+                      onUpgrade={() => setShowUpgradeModal(true)}
+                      lockedPreviews={
+                        <div>
+                          {lockedResults.slice(0, 3).map((business, i) => (
+                            <BusinessCard
+                              key={business.id}
+                              business={business}
+                              listStyle
+                              index={i}
+                              onClick={() => {}}
+                            />
+                          ))}
+                        </div>
+                      }
+                    />
+                  )}
                 </div>
               ) : (
-                <div className="grid gap-3 p-4 sm:grid-cols-2 sm:p-5">
-                  {filtered.map((business, i) => (
-                    <BusinessCard
-                      key={business.id}
-                      business={business}
-                      index={i}
-                      liveFlash={flashIds.has(business.id)}
-                      onClick={() => setSelected(business)}
+                <div>
+                  <div className="grid gap-3 p-4 sm:grid-cols-2 sm:p-5">
+                    {visibleResults.map((business, i) => (
+                      <BusinessCard
+                        key={business.id}
+                        business={business}
+                        index={i}
+                        liveFlash={flashIds.has(business.id)}
+                        onClick={() => setSelected(business)}
+                        savedLeadsHook={savedLeadsHook}
+                      />
+                    ))}
+                  </div>
+                  {lockedResults.length > 0 && (
+                    <UpgradeGate
+                      lockedCount={lockedResults.length}
+                      onUpgrade={() => setShowUpgradeModal(true)}
+                      lockedPreviews={
+                        <div className="grid gap-3 px-4 pb-2 sm:grid-cols-2 sm:px-5">
+                          {lockedResults.slice(0, 4).map((business, i) => (
+                            <BusinessCard key={business.id} business={business} index={i} onClick={() => {}} />
+                          ))}
+                        </div>
+                      }
                     />
-                  ))}
+                  )}
                 </div>
               )}
             </div>
@@ -260,24 +351,24 @@ export function DashboardPage() {
               <HotLeadsFeed events={feedEvents} title="Live opportunity feed" />
 
               {topOutreach.length > 0 && (
-                <div className="rounded-lg border border-[#1c1c1c] bg-[#111] overflow-hidden">
-                  <div className="border-b border-[#161616] px-4 py-2.5">
-                    <h3 className="text-xs font-semibold text-[#aaa]">Top outreach targets</h3>
+                <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
+                  <div className="border-b border-stone-100 bg-stone-50 px-4 py-2.5">
+                    <h3 className="text-xs font-bold text-stone-600 uppercase tracking-wider">Top outreach targets</h3>
                   </div>
-                  <div className="divide-y divide-[#161616]">
+                  <div className="divide-y divide-stone-100">
                     {topOutreach.map((item) => (
                       <button
                         key={item.id}
                         type="button"
                         onClick={() => setSelected(item.business)}
-                        className="w-full px-4 py-3 text-left transition-colors hover:bg-[#141414]"
+                        className="w-full px-4 py-3 text-left transition-colors hover:bg-stone-50 group"
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-semibold text-[#ccc] truncate">{item.name}</span>
-                          <span className="shrink-0 text-xs font-bold tabular-nums text-orange-400">{item.fitScore}</span>
+                          <span className="text-xs font-semibold text-stone-800 truncate group-hover:text-stone-900">{item.name}</span>
+                          <span className="shrink-0 text-xs font-bold tabular-nums text-orange-600">{item.fitScore}</span>
                         </div>
-                        <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-[#555]">{item.angle}</p>
-                        <p className="mt-1 text-[10px] capitalize text-indigo-400/70">
+                        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-stone-500">{item.angle}</p>
+                        <p className="mt-1 text-[10px] capitalize text-indigo-600 font-medium">
                           {item.contactMethod.replace('_', ' ')}
                         </p>
                       </button>
@@ -287,34 +378,19 @@ export function DashboardPage() {
               )}
 
               {businesses.length > 0 && (
-                <div className="rounded-lg border border-[#1c1c1c] bg-[#111] overflow-hidden">
-                  <div className="border-b border-[#161616] px-4 py-2.5">
-                    <h3 className="text-xs font-semibold text-[#aaa]">Market breakdown</h3>
+                <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
+                  <div className="flex items-center gap-1.5 border-b border-stone-100 bg-stone-50 px-4 py-2.5">
+                    <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+                    <h3 className="text-xs font-bold text-stone-600 uppercase tracking-wider">Market breakdown</h3>
                   </div>
-                  <div className="divide-y divide-[#161616]">
+                  <div className="divide-y divide-stone-100">
                     {[
-                      {
-                        label: 'No website',
-                        value: businesses.filter((b) => !b.footprint.websiteExists).length,
-                        color: 'text-red-400',
-                      },
-                      {
-                        label: 'Weak social',
-                        value: businesses.filter(
-                          (b) => !b.footprint.instagramExists || b.footprint.instagramActivityScore < 40
-                        ).length,
-                        color: 'text-amber-400',
-                      },
-                      {
-                        label: '★4.5+ weak digital',
-                        value: businesses.filter(
-                          (b) => b.googleRating >= 4.5 && b.footprint.digitalPresenceStrength < 45
-                        ).length,
-                        color: 'text-orange-400',
-                      },
+                      { label: 'No website', value: businesses.filter((b) => !b.footprint.websiteExists).length, color: 'text-red-600' },
+                      { label: 'Weak social', value: businesses.filter((b) => !b.footprint.instagramExists || b.footprint.instagramActivityScore < 40).length, color: 'text-amber-600' },
+                      { label: '★4.5+ weak digital', value: businesses.filter((b) => b.googleRating >= 4.5 && b.footprint.digitalPresenceStrength < 45).length, color: 'text-orange-600' },
                     ].map((row) => (
                       <div key={row.label} className="flex items-center justify-between px-4 py-2.5">
-                        <span className="text-xs text-[#555]">{row.label}</span>
+                        <span className="text-xs text-stone-500">{row.label}</span>
                         <span className={`text-xs font-bold tabular-nums ${row.color}`}>{row.value}</span>
                       </div>
                     ))}
@@ -326,7 +402,21 @@ export function DashboardPage() {
         </main>
       </div>
 
-      <BusinessDetailModal business={selected} onClose={() => setSelected(null)} />
+      <BusinessDetailModal
+        business={selected}
+        onClose={() => setSelected(null)}
+        savedLeadsHook={savedLeadsHook}
+      />
+
+      {showUpgradeModal && (
+        <UpgradeModal
+          onClose={() => setShowUpgradeModal(false)}
+          onUpgrade={() => {
+            credits.addCredits(50)
+            setShowUpgradeModal(false)
+          }}
+        />
+      )}
     </div>
   )
 }

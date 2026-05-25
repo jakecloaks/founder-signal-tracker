@@ -1,21 +1,21 @@
 import type { OpportunityCategory } from '../types'
 
 const styles: Record<OpportunityCategory, string> = {
-  high_potential: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  under_optimized: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  scaling_fast: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-  weak_digital_presence: 'bg-red-500/10 text-red-400 border-red-500/20',
-  strong_competitor: 'bg-zinc-700/50 text-zinc-400 border-zinc-700/40',
-  needs_automation: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+  high_potential:       'bg-emerald-50 text-emerald-700 border-emerald-200',
+  under_optimized:      'bg-amber-50 text-amber-700 border-amber-200',
+  scaling_fast:         'bg-orange-50 text-orange-700 border-orange-200',
+  weak_digital_presence:'bg-red-50 text-red-600 border-red-200',
+  strong_competitor:    'bg-stone-100 text-stone-500 border-stone-200',
+  needs_automation:     'bg-indigo-50 text-indigo-700 border-indigo-200',
 }
 
 const labels: Record<OpportunityCategory, string> = {
-  high_potential: 'High Potential',
-  under_optimized: 'Under-Optimized',
-  scaling_fast: 'Scaling Fast',
+  high_potential:        'High Potential',
+  under_optimized:       'Under-Optimized',
+  scaling_fast:          'Scaling Fast',
   weak_digital_presence: 'Weak Digital',
-  strong_competitor: 'Competitor',
-  needs_automation: 'Needs Automation',
+  strong_competitor:     'Competitor',
+  needs_automation:      'Needs Automation',
 }
 
 export function OpportunityBadge({ category }: { category: OpportunityCategory }) {

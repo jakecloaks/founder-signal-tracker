@@ -16,8 +16,8 @@ export function BusinessFiltersBar({ filters, onChange }: BusinessFiltersBarProp
           onClick={() => onChange(opt.key)}
           className={`shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${
             filters.active === opt.key
-              ? 'border-indigo-500/40 bg-indigo-500/10 text-indigo-300'
-              : 'border-[#1c1c1c] bg-transparent text-[#666] hover:border-[#252525] hover:text-[#999]'
+              ? 'border-indigo-200 bg-indigo-50 text-indigo-700'
+              : 'border-stone-200 bg-white text-stone-500 hover:border-stone-300 hover:text-stone-700'
           }`}
         >
           {opt.label}

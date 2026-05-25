@@ -1,16 +1,18 @@
 export function BusinessCardSkeleton() {
   return (
-    <div className="glass animate-pulse rounded-xl p-5">
-      <div className="flex gap-4">
-        <div className="h-12 w-12 rounded-lg bg-zinc-800" />
-        <div className="flex-1 space-y-2">
-          <div className="h-4 w-2/3 rounded bg-zinc-800" />
-          <div className="h-3 w-1/2 rounded bg-zinc-800/80" />
+    <div className="flex items-start gap-3 border-b border-stone-100 px-4 py-4 sm:px-5">
+      <div className="shimmer-bar h-9 w-9 shrink-0 rounded-lg" />
+      <div className="flex-1 space-y-2 pt-0.5">
+        <div className="shimmer-bar h-4 w-48 rounded" />
+        <div className="shimmer-bar h-3 w-64 rounded" />
+        <div className="shimmer-bar h-3 w-full rounded" />
+        <div className="shimmer-bar h-3 w-4/5 rounded" />
+        <div className="flex gap-1.5">
+          <div className="shimmer-bar h-5 w-20 rounded" />
+          <div className="shimmer-bar h-5 w-20 rounded" />
         </div>
-        <div className="h-11 w-11 rounded-full bg-zinc-800" />
       </div>
-      <div className="mt-4 h-3 w-full rounded bg-zinc-800/60" />
-      <div className="mt-2 h-3 w-4/5 rounded bg-zinc-800/60" />
+      <div className="shimmer-bar h-7 w-10 shrink-0 rounded-lg" />
     </div>
   )
 }

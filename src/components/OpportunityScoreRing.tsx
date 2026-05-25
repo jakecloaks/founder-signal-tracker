@@ -12,10 +12,10 @@ function getTier(score: number) {
 }
 
 const tierStyles = {
-  hot: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
-  strong: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
-  mid: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-  low: 'bg-zinc-800/80 text-zinc-400 border-zinc-700/60',
+  hot:    'bg-orange-50 text-orange-700 border-orange-200',
+  strong: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  mid:    'bg-amber-50  text-amber-700  border-amber-200',
+  low:    'bg-stone-100 text-stone-500  border-stone-200',
 }
 
 export function OpportunityScoreRing({ score, size = 'sm', pulse }: OpportunityScoreRingProps) {
@@ -30,14 +30,14 @@ export function OpportunityScoreRing({ score, size = 'sm', pulse }: OpportunityS
         }`}
       >
         <span className="text-2xl font-bold tabular-nums leading-none">{score}</span>
-        <span className="mt-0.5 text-[9px] font-semibold uppercase tracking-widest opacity-60">fit</span>
+        <span className="mt-0.5 text-[9px] font-semibold uppercase tracking-widest opacity-50">fit</span>
       </div>
     )
   }
 
   return (
     <div
-      className={`inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-sm font-bold tabular-nums ${styles} ${
+      className={`inline-flex items-center justify-center rounded-lg border px-2 py-0.5 text-sm font-bold tabular-nums ${styles} ${
         tier === 'hot' && pulse ? 'score-hot-glow' : ''
       }`}
       style={{ minWidth: '2.2rem' }}

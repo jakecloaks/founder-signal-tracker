@@ -19,19 +19,19 @@ export function SignalStrengthBar({
     value >= 75 ? 'bg-orange-500' :
     value >= 55 ? 'bg-indigo-500' :
     value >= 35 ? 'bg-amber-500' :
-    'bg-zinc-600'
+    'bg-stone-300'
 
   return (
     <div className="w-full">
       {(label || showValue) && (
         <div className="mb-1 flex items-center justify-between">
-          {label && <span className="text-xs text-[#666]">{label}</span>}
+          {label && <span className="text-xs text-stone-500">{label}</span>}
           {showValue && (
-            <span className="text-xs font-semibold tabular-nums text-[#999]">{value}</span>
+            <span className="text-xs font-semibold tabular-nums text-stone-600">{value}</span>
           )}
         </div>
       )}
-      <div className={`w-full overflow-hidden rounded-full bg-[#1a1a1a] ${height}`}>
+      <div className={`w-full overflow-hidden rounded-full bg-stone-100 ${height}`}>
         <div
           className={`${height} rounded-full bar-fill ${barColor}`}
           style={{ width: `${clampedValue}%` }}
