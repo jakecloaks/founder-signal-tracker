@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { TrendingUp, Building2, Flame, Target, Sparkles } from 'lucide-react'
+import { Building2, Flame, Target, Radar } from 'lucide-react'
 import {
   DEFAULT_SEARCH,
   searchBusinesses,
@@ -99,27 +99,30 @@ export function DashboardPage() {
     () =>
       [...businesses]
         .sort((a, b) => b.fitScore - a.fitScore)
-        .slice(0, 3)
+        .slice(0, 4)
         .map((b) => ({
+          id: b.id,
           name: b.name,
           angle: b.outreachAngle,
           fitScore: b.fitScore,
           contactMethod: b.bestContactMethod,
+          business: b,
         })),
     [businesses]
   )
 
   return (
-    <div className="flex min-h-screen bg-[#0a0a0f]">
+    <div className="flex min-h-screen bg-[#0a0a0a]">
       <Sidebar />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center gap-2 border-b border-zinc-800 px-4 py-3 md:hidden">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
-            <Sparkles className="h-4 w-4 text-white" />
+        {/* Mobile header */}
+        <div className="flex items-center gap-2 border-b border-[#1c1c1c] px-4 py-3 md:hidden">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-600">
+            <Radar className="h-3.5 w-3.5 text-white" />
           </div>
-          <span className="font-semibold text-zinc-100">LocalIQ</span>
-          <Link to="/" className="ml-auto text-xs text-zinc-500 hover:text-zinc-300">
+          <span className="text-sm font-semibold text-white">SignalScope</span>
+          <Link to="/" className="ml-auto text-xs text-[#444] hover:text-[#888]">
             Home
           </Link>
         </div>
@@ -141,78 +144,91 @@ export function DashboardPage() {
           initialServiceType={serviceType}
         />
 
-        <main className="flex-1 overflow-auto p-4 sm:p-6">
-          <div className="mb-6 grid gap-4 sm:grid-cols-3">
-            <div className="glass fade-in rounded-xl p-4 transition-all hover:border-zinc-700">
-              <div className="flex items-center gap-2 text-zinc-500">
-                <Building2 className="h-4 w-4" />
-                <span className="text-xs">Businesses scanned</span>
+        <main className="flex-1 overflow-auto">
+          {/* Compact stats strip */}
+          {!scanning && businesses.length > 0 && (
+            <div className="flex items-center gap-0 border-b border-[#1c1c1c]">
+              <div className="flex items-center gap-2.5 border-r border-[#1c1c1c] px-5 py-3">
+                <Building2 className="h-3.5 w-3.5 text-[#444]" />
+                <span className="text-xs text-[#555]">Scanned</span>
+                <span className="text-sm font-bold tabular-nums text-[#ccc]">{stats.total}</span>
               </div>
-              <p className="mt-1 text-2xl font-semibold tabular-nums text-zinc-100">{stats.total}</p>
-            </div>
-            <div className="glass fade-in stagger-1 rounded-xl p-4 transition-all hover:border-orange-500/20">
-              <div className="flex items-center gap-2 text-zinc-500">
-                <Flame className="h-4 w-4 text-orange-400" />
-                <span className="text-xs">High fit (70+)</span>
+              <div className="flex items-center gap-2.5 border-r border-[#1c1c1c] px-5 py-3">
+                <Flame className="h-3.5 w-3.5 text-orange-500" />
+                <span className="text-xs text-[#555]">High fit ≥70</span>
+                <span className="text-sm font-bold tabular-nums text-orange-400">{stats.hot}</span>
               </div>
-              <p className="mt-1 text-2xl font-semibold tabular-nums text-orange-400">{stats.hot}</p>
-            </div>
-            <div className="glass fade-in stagger-2 rounded-xl p-4 transition-all hover:border-indigo-500/20">
-              <div className="flex items-center gap-2 text-zinc-500">
-                <Target className="h-4 w-4 text-indigo-400" />
-                <span className="text-xs">Avg fit score</span>
+              <div className="flex items-center gap-2.5 px-5 py-3">
+                <Target className="h-3.5 w-3.5 text-indigo-500" />
+                <span className="text-xs text-[#555]">Avg fit</span>
+                <span className="text-sm font-bold tabular-nums text-indigo-300">{stats.avg}</span>
               </div>
-              <p className="mt-1 text-2xl font-semibold tabular-nums text-indigo-300">{stats.avg}</p>
             </div>
-          </div>
+          )}
 
-          <div className="grid gap-6 xl:grid-cols-3">
-            <div className="xl:col-span-2">
-              {!scanning && businesses.length > 0 && (
-                <MapsResultsPanel
-                  industry={industry}
-                  location={location}
-                  serviceType={serviceType}
-                  count={filtered.length}
-                  dataSource={dataSource}
-                />
-              )}
-
-              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="grid xl:grid-cols-3">
+            {/* Main results panel */}
+            <div className="min-w-0 xl:col-span-2 xl:border-r xl:border-[#1c1c1c]">
+              {/* Toolbar */}
+              <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#1c1c1c] bg-[#0a0a0a] px-4 py-2 sm:px-5">
                 <BusinessFiltersBar
                   filters={filters}
                   onChange={(key: BusinessFilterKey) => setFilters({ active: key })}
                 />
-                <div className="flex rounded-lg border border-zinc-800 p-0.5 text-xs">
+                <div className="flex shrink-0 rounded-md border border-[#1c1c1c] p-0.5 text-xs">
                   <button
                     type="button"
                     onClick={() => setListView(true)}
-                    className={`rounded-md px-3 py-1.5 transition-colors ${listView ? 'bg-indigo-500/20 text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+                    className={`rounded px-2.5 py-1.5 font-medium transition-colors ${
+                      listView
+                        ? 'bg-indigo-500/15 text-indigo-300'
+                        : 'text-[#555] hover:text-[#999]'
+                    }`}
                   >
                     List
                   </button>
                   <button
                     type="button"
                     onClick={() => setListView(false)}
-                    className={`rounded-md px-3 py-1.5 transition-colors ${!listView ? 'bg-indigo-500/20 text-indigo-300' : 'text-zinc-500 hover:text-zinc-300'}`}
+                    className={`rounded px-2.5 py-1.5 font-medium transition-colors ${
+                      !listView
+                        ? 'bg-indigo-500/15 text-indigo-300'
+                        : 'text-[#555] hover:text-[#999]'
+                    }`}
                   >
                     Cards
                   </button>
                 </div>
               </div>
 
+              {/* Results info */}
+              {!scanning && businesses.length > 0 && (
+                <div className="px-4 py-2 sm:px-5">
+                  <MapsResultsPanel
+                    industry={industry}
+                    location={location}
+                    serviceType={serviceType}
+                    count={filtered.length}
+                    dataSource={dataSource}
+                  />
+                </div>
+              )}
+
+              {/* Results */}
               {scanning ? (
-                <div className="space-y-3">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <BusinessCardSkeleton key={i} />
+                <div className="divide-y divide-[#161616]">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="px-4 py-3 sm:px-5">
+                      <BusinessCardSkeleton />
+                    </div>
                   ))}
                 </div>
               ) : filtered.length === 0 ? (
-                <div className="glass rounded-xl p-12 text-center text-zinc-500">
-                  No businesses match your filters. Try a new search or clear filters.
+                <div className="px-5 py-16 text-center text-sm text-[#444]">
+                  No businesses match your filters.
                 </div>
               ) : listView ? (
-                <div className="space-y-3">
+                <div>
                   {filtered.map((business, i) => (
                     <BusinessCard
                       key={business.id}
@@ -225,7 +241,7 @@ export function DashboardPage() {
                   ))}
                 </div>
               ) : (
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-3 p-4 sm:grid-cols-2 sm:p-5">
                   {filtered.map((business, i) => (
                     <BusinessCard
                       key={business.id}
@@ -239,69 +255,72 @@ export function DashboardPage() {
               )}
             </div>
 
-            <div className="space-y-6">
+            {/* Right sidebar */}
+            <div className="hidden p-4 xl:block xl:space-y-4">
               <HotLeadsFeed events={feedEvents} title="Live opportunity feed" />
 
-              <div className="glass fade-in rounded-xl p-4">
-                <h3 className="mb-4 text-sm font-semibold text-zinc-200">
-                  Top outreach targets
-                </h3>
-                <div className="space-y-4">
-                  {topOutreach.map((item) => (
-                    <div
-                      key={item.name}
-                      className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-3 transition-all hover:border-indigo-500/30 hover:bg-zinc-900/60"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-zinc-200">{item.name}</span>
-                        <span className="text-xs font-semibold tabular-nums text-orange-400">{item.fitScore}</span>
-                      </div>
-                      <p className="mt-1.5 text-xs leading-relaxed text-zinc-500">{item.angle}</p>
-                      <p className="mt-2 text-xs text-indigo-400/80 capitalize">
-                        Best contact: {item.contactMethod.replace('_', ' ')}
-                      </p>
-                    </div>
-                  ))}
+              {topOutreach.length > 0 && (
+                <div className="rounded-lg border border-[#1c1c1c] bg-[#111] overflow-hidden">
+                  <div className="border-b border-[#161616] px-4 py-2.5">
+                    <h3 className="text-xs font-semibold text-[#aaa]">Top outreach targets</h3>
+                  </div>
+                  <div className="divide-y divide-[#161616]">
+                    {topOutreach.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setSelected(item.business)}
+                        className="w-full px-4 py-3 text-left transition-colors hover:bg-[#141414]"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-semibold text-[#ccc] truncate">{item.name}</span>
+                          <span className="shrink-0 text-xs font-bold tabular-nums text-orange-400">{item.fitScore}</span>
+                        </div>
+                        <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-[#555]">{item.angle}</p>
+                        <p className="mt-1 text-[10px] capitalize text-indigo-400/70">
+                          {item.contactMethod.replace('_', ' ')}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="glass fade-in rounded-xl p-4">
-                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-zinc-200">
-                  <TrendingUp className="h-4 w-4 text-emerald-400" />
-                  Market snapshot
-                </div>
-                <div className="space-y-3 text-xs text-zinc-500">
-                  <div className="flex justify-between border-b border-zinc-800/60 pb-2">
-                    <span>No website</span>
-                    <span className="font-medium tabular-nums text-zinc-300">
-                      {businesses.filter((b) => !b.footprint.websiteExists).length}
-                    </span>
+              {businesses.length > 0 && (
+                <div className="rounded-lg border border-[#1c1c1c] bg-[#111] overflow-hidden">
+                  <div className="border-b border-[#161616] px-4 py-2.5">
+                    <h3 className="text-xs font-semibold text-[#aaa]">Market breakdown</h3>
                   </div>
-                  <div className="flex justify-between border-b border-zinc-800/60 pb-2">
-                    <span>Weak social</span>
-                    <span className="font-medium tabular-nums text-zinc-300">
+                  <div className="divide-y divide-[#161616]">
+                    {[
                       {
-                        businesses.filter(
-                          (b) =>
-                            !b.footprint.instagramExists || b.footprint.instagramActivityScore < 40
-                        ).length
-                      }
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>High reviews, weak digital</span>
-                    <span className="font-medium tabular-nums text-orange-400/90">
+                        label: 'No website',
+                        value: businesses.filter((b) => !b.footprint.websiteExists).length,
+                        color: 'text-red-400',
+                      },
                       {
-                        businesses.filter(
-                          (b) =>
-                            b.googleRating >= 4.5 &&
-                            b.footprint.digitalPresenceStrength < 45
-                        ).length
-                      }
-                    </span>
+                        label: 'Weak social',
+                        value: businesses.filter(
+                          (b) => !b.footprint.instagramExists || b.footprint.instagramActivityScore < 40
+                        ).length,
+                        color: 'text-amber-400',
+                      },
+                      {
+                        label: '★4.5+ weak digital',
+                        value: businesses.filter(
+                          (b) => b.googleRating >= 4.5 && b.footprint.digitalPresenceStrength < 45
+                        ).length,
+                        color: 'text-orange-400',
+                      },
+                    ].map((row) => (
+                      <div key={row.label} className="flex items-center justify-between px-4 py-2.5">
+                        <span className="text-xs text-[#555]">{row.label}</span>
+                        <span className={`text-xs font-bold tabular-nums ${row.color}`}>{row.value}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </main>

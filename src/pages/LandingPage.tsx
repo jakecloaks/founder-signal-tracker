@@ -1,13 +1,12 @@
 import { Link } from 'react-router-dom'
 import {
-  Sparkles,
   Radar,
   Target,
   TrendingUp,
   ArrowRight,
-  Building2,
   Radio,
   Briefcase,
+  MessageCircle,
 } from 'lucide-react'
 import { Button } from '../components/Button'
 import { searchBusinesses } from '../services/business'
@@ -18,7 +17,7 @@ const features = [
   {
     icon: Radar,
     title: 'Local business recon',
-    description: 'Enter a niche, city, and your service type. Get scored prospects ranked by fit — not just opportunity.',
+    description: 'Enter a niche, city, and your service type. Get scored prospects ranked by fit — not just generic opportunity.',
   },
   {
     icon: Briefcase,
@@ -33,11 +32,11 @@ const features = [
   {
     icon: TrendingUp,
     title: 'Best contact method',
-    description: 'Know whether to DM on Instagram, call, or use the contact form — with reasoning for every recommendation.',
+    description: 'Know whether to DM on Instagram, call, or use the contact form — with channel visibility scores.',
   },
 ]
 
-const exampleSignals = [
+const signals = [
   'No website detected',
   'Weak Instagram activity',
   'High reviews, weak branding',
@@ -46,192 +45,231 @@ const exampleSignals = [
   'Inconsistent social channels',
 ]
 
+function fitBadgeColor(score: number) {
+  if (score >= 80) return 'bg-orange-500/15 text-orange-300 border-orange-500/25'
+  if (score >= 65) return 'bg-indigo-500/15 text-indigo-300 border-indigo-500/25'
+  if (score >= 45) return 'bg-amber-500/15 text-amber-300 border-amber-500/25'
+  return 'bg-zinc-800 text-zinc-400 border-zinc-700'
+}
+
 export function LandingPage() {
   const [previewBusinesses, setPreviewBusinesses] = useState<LocalBusiness[]>([])
 
   useEffect(() => {
-    searchBusinesses('dentists', 'Utah', 'website redesign').then((r) => setPreviewBusinesses(r.businesses.slice(0, 3)))
+    searchBusinesses('dentists', 'Utah', 'website redesign')
+      .then((r) => setPreviewBusinesses(r.businesses.slice(0, 4)))
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
-      <nav className="glass sticky top-0 z-30 border-b border-zinc-800/80">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
-              <Sparkles className="h-4 w-4 text-white" />
+    <div className="min-h-screen bg-[#0a0a0a]">
+      {/* Nav */}
+      <nav className="sticky top-0 z-30 border-b border-[#1c1c1c] bg-[#0a0a0a]">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-600">
+              <Radar className="h-3.5 w-3.5 text-white" />
             </div>
-            <span className="font-semibold text-zinc-100">LocalIQ</span>
+            <div>
+              <span className="text-sm font-bold text-white">SignalScope</span>
+              <span className="ml-2 text-[10px] font-medium uppercase tracking-widest text-[#444]">Agency Intel</span>
+            </div>
           </div>
           <Link to="/dashboard">
-            <Button variant="secondary" className="!py-2 !px-4 text-xs">
-              Open Dashboard
+            <Button variant="secondary" className="!py-1.5 !px-4 !text-xs">
+              Open app
             </Button>
           </Link>
         </div>
       </nav>
 
-      <section className="hero-glow relative overflow-hidden px-6 pb-24 pt-20">
-        <div className="mx-auto max-w-4xl text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs text-indigo-300">
+      {/* Hero */}
+      <section className="hero-glow px-6 pb-20 pt-16">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-indigo-500/25 bg-indigo-500/8 px-3.5 py-1.5 text-xs text-indigo-300">
             <span className="live-dot h-1.5 w-1.5 rounded-full bg-indigo-400" />
             AI-powered local business opportunity intelligence
           </div>
-          <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-            <span className="gradient-text">
-              Find Local Businesses That Need Your Service Before Competitors Do.
-            </span>
+          <h1 className="text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl">
+            Find local businesses that need your service.{' '}
+            <span className="text-[#888]">Before competitors do.</span>
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-zinc-400">
-            Enter a niche, location, and your service type. Get a ranked list of local businesses scored specifically on how much they need what you offer.
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-[#666]">
+            Enter a niche, location, and your service type. Get a ranked list of local businesses scored specifically on how much they need what you offer — with AI-generated outreach for each.
           </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="mt-8 flex flex-col items-start gap-3 sm:flex-row">
             <Link to="/dashboard">
-              <Button className="gap-2 px-8 py-3 text-base">
-                Start Finding Prospects
+              <Button className="gap-2 px-6 py-2.5 text-sm font-semibold">
+                Start prospecting
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
+            <span className="flex items-center gap-1.5 text-xs text-[#444]">
+              No account needed · Works without API keys
+            </span>
           </div>
-          <div className="mt-16 flex flex-wrap items-center justify-center gap-8 text-sm text-zinc-500">
-            <span>Built for agencies & freelancers</span>
-            <span className="hidden sm:inline">·</span>
+
+          {/* Trust bar */}
+          <div className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-[#444]">
+            <span>Agencies &amp; freelancers</span>
+            <span className="h-3 w-px bg-[#222]" />
             <span>Service-aware fit scoring</span>
-            <span className="hidden sm:inline">·</span>
+            <span className="h-3 w-px bg-[#222]" />
             <span>AI outreach intelligence</span>
+            <span className="h-3 w-px bg-[#222]" />
+            <span>Best contact method per business</span>
           </div>
         </div>
       </section>
 
-      <section className="border-t border-zinc-800/60 px-6 py-24">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="text-center text-2xl font-semibold text-zinc-100 sm:text-3xl">
-            Built for agencies targeting local SMBs
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-center text-zinc-500">
-            Find businesses that are a strong fit for your specific service — not just anyone with weak digital presence.
+      {/* Live preview panel */}
+      <section className="border-t border-[#1c1c1c] px-6 py-16">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-6 flex items-center gap-3">
+            <span className="live-dot h-1.5 w-1.5 rounded-full bg-orange-500" />
+            <p className="text-xs font-medium text-[#555] uppercase tracking-widest">
+              Live example — dentists in Utah · website redesign
+            </p>
+          </div>
+          <div className="overflow-hidden rounded-xl border border-[#1c1c1c] bg-[#0f0f0f]">
+            {/* Fake toolbar */}
+            <div className="flex items-center gap-1.5 border-b border-[#1c1c1c] px-4 py-2.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#222]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#222]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#222]" />
+              <span className="ml-3 text-[11px] text-[#333]">signalscope.app/dashboard · dentists in Utah · website redesign</span>
+            </div>
+            {/* Business rows */}
+            <div className="divide-y divide-[#161616]">
+              {previewBusinesses.length === 0
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-4 px-5 py-4">
+                      <div className="shimmer-bar h-8 w-8 rounded-lg" />
+                      <div className="flex-1 space-y-2">
+                        <div className="shimmer-bar h-3 w-40 rounded" />
+                        <div className="shimmer-bar h-2.5 w-64 rounded" />
+                      </div>
+                      <div className="shimmer-bar h-7 w-10 rounded-md" />
+                    </div>
+                  ))
+                : previewBusinesses.map((b) => (
+                    <div key={b.id} className="flex items-start gap-3 px-5 py-3.5">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#1c1c1c] bg-[#141414] text-xs font-bold text-[#888]">
+                        {b.logo}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-[#ddd]">{b.name}</p>
+                        <p className="mt-0.5 text-xs text-[#555]">
+                          {b.googleRating}★ · {b.reviewCount} reviews · {b.weaknesses[0] ?? b.industry}
+                        </p>
+                        <p className="mt-1 line-clamp-1 text-[11px] text-[#444]">{b.fitExplanation}</p>
+                      </div>
+                      <div className="flex shrink-0 flex-col items-end gap-1.5">
+                        <span className={`inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-sm font-bold tabular-nums ${fitBadgeColor(b.fitScore)}`}>
+                          {b.fitScore}
+                        </span>
+                        <span className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-medium text-[#666] border-[#1c1c1c]`}>
+                          <MessageCircle className="h-2.5 w-2.5" />
+                          {b.bestContactMethod?.replace('_', ' ') ?? 'phone'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="border-t border-[#1c1c1c] px-6 py-16">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="text-xl font-bold text-white">Built for outbound agency work</h2>
+          <p className="mt-2 text-sm text-[#555]">
+            Stop cold-searching LinkedIn. Find local businesses that actually need your service.
           </p>
-          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {features.map((f) => (
               <div
                 key={f.title}
-                className="card-hover rounded-xl border border-zinc-800 bg-zinc-900/30 p-6"
+                className="rounded-lg border border-[#1c1c1c] bg-[#111] p-5"
               >
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10">
-                  <f.icon className="h-5 w-5 text-indigo-400" />
+                <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-md bg-indigo-500/10 border border-indigo-500/15">
+                  <f.icon className="h-4 w-4 text-indigo-400" />
                 </div>
-                <h3 className="font-semibold text-zinc-100">{f.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-500">{f.description}</p>
+                <h3 className="text-sm font-semibold text-[#ccc]">{f.title}</h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-[#555]">{f.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="border-t border-zinc-800/60 bg-zinc-900/20 px-6 py-24">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
+      {/* Signals */}
+      <section className="border-t border-[#1c1c1c] px-6 py-16">
+        <div className="mx-auto max-w-5xl">
+          <div className="grid items-start gap-12 lg:grid-cols-2">
             <div>
-              <h2 className="text-2xl font-semibold text-zinc-100 sm:text-3xl">Opportunity signals we detect</h2>
-              <p className="mt-3 text-zinc-500">
-                Surface weaknesses that make a business a high-fit prospect for your specific service.
+              <h2 className="text-xl font-bold text-white">Signals we detect</h2>
+              <p className="mt-2 text-sm text-[#555]">
+                Weaknesses that make a business a high-fit prospect for your specific service.
               </p>
-              <ul className="mt-8 grid gap-3 sm:grid-cols-2">
-                {exampleSignals.map((signal) => (
+              <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+                {signals.map((s) => (
                   <li
-                    key={signal}
-                    className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-300"
+                    key={s}
+                    className="flex items-center gap-2.5 rounded-md border border-[#1c1c1c] bg-[#111] px-3 py-2.5 text-xs text-[#888]"
                   >
-                    <Radio className="h-4 w-4 shrink-0 text-indigo-400" />
-                    {signal}
+                    <Radio className="h-3.5 w-3.5 shrink-0 text-indigo-500" />
+                    {s}
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="glass rounded-2xl p-6">
-              <p className="mb-4 text-xs font-medium uppercase tracking-wider text-zinc-500">
-                Live fit scoring example — dentists · website redesign
+            <div className="rounded-lg border border-[#1c1c1c] bg-[#0f0f0f] p-5">
+              <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[#444]">
+                Contact channel visibility scores
               </p>
               <div className="space-y-3">
-                {previewBusinesses.map((row) => (
-                  <div
-                    key={row.id}
-                    className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-zinc-200">{row.name}</p>
-                      <p className="text-xs text-zinc-500">{row.weaknesses[0] ?? row.outreachAngle}</p>
+                {[
+                  { label: 'Instagram DM', value: 78, color: 'bg-indigo-500' },
+                  { label: 'Direct call', value: 64, color: 'bg-emerald-600' },
+                  { label: 'Website form', value: 41, color: 'bg-amber-600' },
+                  { label: 'Facebook', value: 28, color: 'bg-zinc-600' },
+                ].map((row) => (
+                  <div key={row.label} className="flex items-center gap-3">
+                    <span className="w-24 shrink-0 text-xs text-[#666]">{row.label}</span>
+                    <div className="h-1 flex-1 overflow-hidden rounded-full bg-[#1a1a1a]">
+                      <div className={`h-full bar-fill rounded-full ${row.color}`} style={{ width: `${row.value}%` }} />
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span className="rounded-full bg-orange-500/15 px-2.5 py-0.5 text-sm font-semibold text-orange-400">
-                        {row.fitScore}
-                      </span>
-                      <span className="text-[10px] text-zinc-600">fit score</span>
-                    </div>
+                    <span className="w-7 text-right text-xs tabular-nums text-[#555]">{row.value}</span>
                   </div>
                 ))}
               </div>
+              <p className="mt-4 text-[11px] text-[#444]">
+                AI determines the best channel to reach each business based on presence, activity, and context.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="border-t border-zinc-800/60 px-6 py-24">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="text-center text-2xl font-semibold text-zinc-100 sm:text-3xl">
-            Dashboard preview
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-center text-zinc-500">
-            Maps-style results, fit scores, and AI outreach — built for agency prospecting.
+      {/* CTA */}
+      <section className="border-t border-[#1c1c1c] px-6 py-16">
+        <div className="mx-auto max-w-xl">
+          <h2 className="text-xl font-bold text-white">Start finding high-fit prospects today</h2>
+          <p className="mt-2 text-sm text-[#555]">
+            Search any niche, any city, for any service. Pitch with confidence.
           </p>
-          <div className="mt-12 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/40 shadow-2xl shadow-indigo-500/5">
-            <div className="flex items-center gap-2 border-b border-zinc-800 px-4 py-3">
-              <div className="h-3 w-3 rounded-full bg-zinc-700" />
-              <div className="h-3 w-3 rounded-full bg-zinc-700" />
-              <div className="h-3 w-3 rounded-full bg-zinc-700" />
-              <span className="ml-2 text-xs text-zinc-600">localiq.app/dashboard · dentists in Utah · website redesign</span>
-            </div>
-            <div className="grid gap-4 p-6 md:grid-cols-3">
-              {previewBusinesses.map((c) => (
-                <div
-                  key={c.id}
-                  className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-indigo-400" />
-                      <span className="text-sm font-medium text-zinc-200">{c.name}</span>
-                    </div>
-                    <span className="text-sm font-bold text-orange-400">{c.fitScore}</span>
-                  </div>
-                  <p className="mt-2 text-xs text-zinc-500">{c.googleRating}★ · {c.reviewCount} reviews</p>
-                  <p className="mt-1 text-xs text-indigo-400/80 capitalize">{c.bestContactMethod?.replace('_', ' ') ?? 'phone'}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-zinc-800/60 px-6 py-24">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-2xl font-semibold text-zinc-100 sm:text-3xl">
-            Start finding high-fit prospects today
-          </h2>
-          <p className="mt-4 text-zinc-500">
-            Search any niche, any city, for any service — pitch with confidence.
-          </p>
-          <Link to="/dashboard" className="mt-8 inline-block">
-            <Button className="gap-2 px-8 py-3 text-base">
-              Find Prospects Now
+          <Link to="/dashboard" className="mt-6 inline-flex items-center gap-2">
+            <Button className="gap-2 px-5 py-2.5 text-sm font-semibold">
+              Open SignalScope
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
         </div>
       </section>
 
-      <footer className="border-t border-zinc-800 px-6 py-8 text-center text-xs text-zinc-600">
-        © {new Date().getFullYear()} LocalIQ. AI-powered local business opportunity intelligence.
+      <footer className="border-t border-[#1c1c1c] px-6 py-6 text-xs text-[#333]">
+        © {new Date().getFullYear()} SignalScope · AI-powered local business opportunity intelligence
       </footer>
     </div>
   )

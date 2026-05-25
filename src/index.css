@@ -2,16 +2,14 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-surface: #0a0a0f;
-  --color-surface-elevated: #12121a;
-  --color-surface-card: #16161f;
-  --color-border: #1f1f2e;
-  --color-border-hover: #2a2a3d;
-  --color-accent: #6366f1;
-  --color-accent-glow: #818cf8;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  --color-surface: #0a0a0a;
+  --color-surface-raised: #111111;
+  --color-surface-elevated: #161616;
+  --color-border: #1c1c1c;
+  --color-border-strong: #252525;
+  --color-accent: #5b6ef5;
   --color-hot: #f97316;
-  --color-success: #22c55e;
-  --color-warning: #eab308;
 }
 
 * {
@@ -26,55 +24,68 @@ body {
   margin: 0;
   font-family: var(--font-sans);
   background: var(--color-surface);
-  color: #e4e4e7;
+  color: #e2e2e2;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
   min-height: 100vh;
 }
 
+/* Flat panel — replaces glass */
 .glass {
-  background: rgba(18, 18, 26, 0.7);
-  backdrop-filter: blur(12px);
+  background: var(--color-surface-raised);
   border: 1px solid var(--color-border);
 }
 
+.panel {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+}
+
+.panel-elevated {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-strong);
+}
+
+/* Card interaction */
+.card-hover {
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.card-hover:hover {
+  background: #141414;
+  border-color: var(--color-border-strong);
+}
+
+/* Gradient text (landing only) */
 .gradient-text {
-  background: linear-gradient(135deg, #e4e4e7 0%, #a5b4fc 50%, #6366f1 100%);
+  background: linear-gradient(135deg, #e4e4e7 0%, #a5b4fc 60%, #818cf8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
+/* Subtle landing hero bg */
 .hero-glow {
-  background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.25), transparent);
+  background: radial-gradient(ellipse 60% 40% at 50% -10%, rgba(91, 110, 245, 0.12), transparent);
 }
 
-.card-hover {
-  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
-}
-
-.card-hover:hover {
-  border-color: var(--color-border-hover);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.12), 0 0 0 1px rgba(99, 102, 241, 0.06);
-  background: rgba(22, 22, 31, 0.85);
-}
-
+/* Fade-in — subtle, fast */
 .fade-in {
-  animation: fade-in 0.45s ease-out both;
+  animation: fade-in 0.2s ease-out both;
 }
 
-.stagger-1 { animation-delay: 0.04s; }
-.stagger-2 { animation-delay: 0.08s; }
-.stagger-3 { animation-delay: 0.12s; }
-.stagger-4 { animation-delay: 0.16s; }
+.stagger-1 { animation-delay: 0.03s; }
+.stagger-2 { animation-delay: 0.06s; }
+.stagger-3 { animation-delay: 0.09s; }
+.stagger-4 { animation-delay: 0.12s; }
 
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -82,85 +93,73 @@ body {
   }
 }
 
-.chart-bar-fill {
-  animation: bar-grow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
-  transform-origin: left center;
+/* Score bars — flat, no gradient */
+.bar-fill {
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@keyframes bar-grow {
-  from {
-    transform: scaleX(0);
-    opacity: 0.6;
-  }
-  to {
-    transform: scaleX(1);
-    opacity: 1;
-  }
+/* Score badge glow for hot targets only */
+.score-hot-glow {
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.2), inset 0 1px 0 rgba(249, 115, 22, 0.08);
 }
 
-.score-ring-fill {
-  transition: stroke-dashoffset 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.score-pulse {
-  animation: score-glow 2.5s ease-in-out infinite;
-}
-
-@keyframes score-glow {
-  0%, 100% {
-    filter: drop-shadow(0 0 0 transparent);
-  }
-  50% {
-    filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.35));
-  }
-}
-
+/* Live flash for new items */
 .live-flash {
-  animation: live-flash 0.6s ease-out;
+  animation: live-flash 0.5s ease-out;
 }
 
 @keyframes live-flash {
-  0% {
-    background-color: rgba(99, 102, 241, 0.15);
-  }
-  100% {
-    background-color: transparent;
-  }
+  0% { background-color: rgba(91, 110, 245, 0.08); }
+  100% { background-color: transparent; }
 }
 
+/* Opportunity highlight for hot cards */
 .opportunity-hot {
-  box-shadow: inset 0 1px 0 rgba(249, 115, 22, 0.12);
+  border-left: 3px solid rgba(249, 115, 22, 0.5) !important;
 }
 
+/* Live dot */
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  50% { opacity: 0.3; }
 }
 
 .live-dot {
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
-@keyframes feed-scroll {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-50%); }
-}
-
-.feed-track {
-  animation: feed-scroll 40s linear infinite;
-}
-
-.feed-track:hover {
-  animation-play-state: paused;
-}
-
+/* Skeleton shimmer */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 
 .shimmer-bar {
-  background: linear-gradient(90deg, #1f1f2e 25%, #2a2a3d 50%, #1f1f2e 75%);
+  background: linear-gradient(90deg, #161616 25%, #1f1f1f 50%, #161616 75%);
   background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+  animation: shimmer 1.8s infinite;
+}
+
+/* Fit score bar at bottom of cards */
+.fit-bar-hot { background: #f97316; }
+.fit-bar-strong { background: #5b6ef5; }
+.fit-bar-mid { background: #f59e0b; }
+.fit-bar-low { background: #3f3f46; }
+
+/* Ring fill (kept for compatibility) */
+.score-ring-fill {
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.score-pulse {
+  animation: none;
+}
+
+/* Chart bar fill */
+.chart-bar-fill {
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Feed no scroll animation */
+.feed-track {
+  animation: none;
 }
