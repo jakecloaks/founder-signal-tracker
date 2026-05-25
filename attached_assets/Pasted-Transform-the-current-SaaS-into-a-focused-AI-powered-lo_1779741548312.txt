@@ -1,0 +1,121 @@
+Transform the current SaaS into a focused AI-powered local business opportunity finder.
+
+IMPORTANT:
+Do NOT rebuild the app from scratch.
+Keep the current premium UI, layout, dashboard structure, animations, and design system.
+
+NEW PRODUCT DIRECTION:
+The platform should help agencies and service providers find local businesses that are likely to need their service.
+
+CORE USER FLOW:
+User enters:
+- business niche
+- location
+- their service type
+
+Example:
+- dentists in Miami
+- service offered: website redesign
+
+The system analyzes Google Maps-style business data and determines:
+- which businesses are best fit for that service
+- why they are a good fit
+- best outreach method
+
+REMOVE:
+- founder-focused terminology
+- startup-focused language
+- generic signal tracking positioning
+
+REPLACE WITH:
+local business opportunity intelligence.
+
+NEW FEATURES:
+
+1. Search Interface
+Inputs:
+- business niche
+- location
+- user service type
+
+2. Business Opportunity Cards
+Each card should include:
+- business name
+- rating
+- review count
+- business images
+- website exists or not
+- Instagram exists or not
+- Facebook exists or not
+- fit score
+- outreach confidence score
+- recommended contact method
+
+3. Fit Analysis Engine
+Analyze businesses based on:
+- weak or missing website
+- outdated branding
+- inactive social media
+- poor image quality
+- low engagement
+- weak online presence
+- inconsistent branding
+- missing booking/contact systems
+
+4. AI Opportunity Reasoning
+For every business, generate:
+- why they may need the user’s service
+- estimated pain points
+- outreach angle
+- fit explanation
+
+Example:
+“This dental clinic has strong reviews but poor branding and inactive Instagram presence. Likely a strong fit for social media growth services.”
+
+5. Best Contact Method
+Determine:
+- whether Instagram, phone, website form, email, or Facebook is best
+
+Generate reasoning:
+Example:
+“Instagram is the best outreach method because the business actively links and updates their profile.”
+
+6. Contact Visibility Scoring
+Estimate:
+- how visible and active each contact channel is
+
+7. Mock Google Maps Data
+Use realistic mock business data inspired by local businesses.
+
+Include:
+- photos
+- reviews
+- websites
+- social links
+- contact methods
+
+8. UI Improvements
+Make the platform feel like:
+- Google Maps meets AI sales intelligence
+- modern
+- premium
+- highly actionable
+
+9. Dashboard Focus
+Prioritize:
+- actionability
+- clarity
+- confidence
+- outreach readiness
+
+Reduce unnecessary charts and complexity.
+
+10. Architecture
+Keep code modular and maintainable.
+Use reusable React components and utility functions.
+
+IMPORTANT:
+Do NOT add backend complexity yet.
+Do NOT add real scraping yet.
+Do NOT add authentication or billing.
+Focus on making the MVP feel extremely useful and believable.

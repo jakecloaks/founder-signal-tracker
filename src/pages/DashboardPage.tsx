@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Zap, TrendingUp, Building2, Flame, Target } from 'lucide-react'
+import { TrendingUp, Building2, Flame, Target, Sparkles } from 'lucide-react'
 import {
   DEFAULT_SEARCH,
   searchBusinesses,
@@ -26,6 +26,7 @@ import type { BusinessFilterKey, BusinessFilters, LocalBusiness } from '../types
 export function DashboardPage() {
   const [industry, setIndustry] = useState(DEFAULT_SEARCH.industry)
   const [location, setLocation] = useState(DEFAULT_SEARCH.location)
+  const [serviceType, setServiceType] = useState(DEFAULT_SEARCH.serviceType)
   const [businesses, setBusinesses] = useState<LocalBusiness[]>([])
   const [dataSource, setDataSource] = useState<BusinessDataSource>('mock')
   const [search, setSearch] = useState('')
@@ -36,12 +37,13 @@ export function DashboardPage() {
   const [flashIds, setFlashIds] = useState<Set<string>>(new Set())
   const [initialized, setInitialized] = useState(false)
 
-  const runSearch = useCallback(async (ind: string, loc: string) => {
+  const runSearch = useCallback(async (ind: string, loc: string, svc: string) => {
     setScanning(true)
     setIndustry(ind)
     setLocation(loc)
+    setServiceType(svc)
     try {
-      const result = await searchBusinesses(ind, loc)
+      const result = await searchBusinesses(ind, loc, svc)
       setBusinesses(result.businesses)
       setDataSource(result.source)
     } finally {
@@ -51,7 +53,7 @@ export function DashboardPage() {
 
   useEffect(() => {
     if (!initialized) {
-      runSearch(DEFAULT_SEARCH.industry, DEFAULT_SEARCH.location)
+      runSearch(DEFAULT_SEARCH.industry, DEFAULT_SEARCH.location, DEFAULT_SEARCH.serviceType)
       setInitialized(true)
     }
   }, [initialized, runSearch])
@@ -60,7 +62,7 @@ export function DashboardPage() {
     const interval = setInterval(() => {
       setBusinesses((prev) => {
         let next = tickLiveIntelligence(prev)
-        const injected = injectLiveOpportunity(next, industry, location)
+        const injected = injectLiveOpportunity(next, industry, location, serviceType)
         if (injected) {
           next = [injected, ...next]
           setFlashIds((ids) => new Set(ids).add(injected.id))
@@ -76,7 +78,7 @@ export function DashboardPage() {
       })
     }, 14000)
     return () => clearInterval(interval)
-  }, [industry, location])
+  }, [industry, location, serviceType])
 
   const filtered = useMemo(
     () => filterBusinesses(businesses, filters, search),
@@ -86,9 +88,9 @@ export function DashboardPage() {
   const feedEvents = useMemo(() => buildFeedFromBusinesses(businesses), [businesses])
 
   const stats = useMemo(() => {
-    const hot = businesses.filter((b) => b.opportunityScore >= 70).length
+    const hot = businesses.filter((b) => b.fitScore >= 70).length
     const avg = businesses.length
-      ? Math.round(businesses.reduce((s, b) => s + b.opportunityScore, 0) / businesses.length)
+      ? Math.round(businesses.reduce((s, b) => s + b.fitScore, 0) / businesses.length)
       : 0
     return { total: businesses.length, hot, avg }
   }, [businesses])
@@ -96,12 +98,13 @@ export function DashboardPage() {
   const topOutreach = useMemo(
     () =>
       [...businesses]
-        .sort((a, b) => b.opportunityScore - a.opportunityScore)
+        .sort((a, b) => b.fitScore - a.fitScore)
         .slice(0, 3)
         .map((b) => ({
           name: b.name,
           angle: b.outreachAngle,
-          score: b.opportunityScore,
+          fitScore: b.fitScore,
+          contactMethod: b.bestContactMethod,
         })),
     [businesses]
   )
@@ -113,9 +116,9 @@ export function DashboardPage() {
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center gap-2 border-b border-zinc-800 px-4 py-3 md:hidden">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
-            <Zap className="h-4 w-4 text-white" />
+            <Sparkles className="h-4 w-4 text-white" />
           </div>
-          <span className="font-semibold text-zinc-100">Founder Signal</span>
+          <span className="font-semibold text-zinc-100">LocalIQ</span>
           <Link to="/" className="ml-auto text-xs text-zinc-500 hover:text-zinc-300">
             Home
           </Link>
@@ -135,6 +138,7 @@ export function DashboardPage() {
           loading={scanning}
           initialIndustry={industry}
           initialLocation={location}
+          initialServiceType={serviceType}
         />
 
         <main className="flex-1 overflow-auto p-4 sm:p-6">
@@ -149,14 +153,14 @@ export function DashboardPage() {
             <div className="glass fade-in stagger-1 rounded-xl p-4 transition-all hover:border-orange-500/20">
               <div className="flex items-center gap-2 text-zinc-500">
                 <Flame className="h-4 w-4 text-orange-400" />
-                <span className="text-xs">High opportunity (70+)</span>
+                <span className="text-xs">High fit (70+)</span>
               </div>
               <p className="mt-1 text-2xl font-semibold tabular-nums text-orange-400">{stats.hot}</p>
             </div>
             <div className="glass fade-in stagger-2 rounded-xl p-4 transition-all hover:border-indigo-500/20">
               <div className="flex items-center gap-2 text-zinc-500">
                 <Target className="h-4 w-4 text-indigo-400" />
-                <span className="text-xs">Avg opportunity</span>
+                <span className="text-xs">Avg fit score</span>
               </div>
               <p className="mt-1 text-2xl font-semibold tabular-nums text-indigo-300">{stats.avg}</p>
             </div>
@@ -168,6 +172,7 @@ export function DashboardPage() {
                 <MapsResultsPanel
                   industry={industry}
                   location={location}
+                  serviceType={serviceType}
                   count={filtered.length}
                   dataSource={dataSource}
                 />
@@ -239,7 +244,7 @@ export function DashboardPage() {
 
               <div className="glass fade-in rounded-xl p-4">
                 <h3 className="mb-4 text-sm font-semibold text-zinc-200">
-                  AI outreach suggestions
+                  Top outreach targets
                 </h3>
                 <div className="space-y-4">
                   {topOutreach.map((item) => (
@@ -249,9 +254,12 @@ export function DashboardPage() {
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-zinc-200">{item.name}</span>
-                        <span className="text-xs font-semibold tabular-nums text-indigo-400">{item.score}</span>
+                        <span className="text-xs font-semibold tabular-nums text-orange-400">{item.fitScore}</span>
                       </div>
-                      <p className="mt-2 text-xs leading-relaxed text-zinc-500">{item.angle}</p>
+                      <p className="mt-1.5 text-xs leading-relaxed text-zinc-500">{item.angle}</p>
+                      <p className="mt-2 text-xs text-indigo-400/80 capitalize">
+                        Best contact: {item.contactMethod.replace('_', ' ')}
+                      </p>
                     </div>
                   ))}
                 </div>

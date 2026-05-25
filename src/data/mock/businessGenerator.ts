@@ -72,6 +72,7 @@ export function parseSearchQuery(industry: string, location: string) {
 function generateOneBusiness(
   industry: string,
   location: string,
+  serviceType: string,
   seed: number,
   index: number
 ): LocalBusiness {
@@ -128,6 +129,7 @@ function generateOneBusiness(
     lastUpdated: new Date().toISOString(),
     activeGrowth,
     dataSource: 'mock',
+    serviceType: serviceType || 'marketing',
     phone: `(${Math.floor(200 + r(19) * 799)}) ${Math.floor(100 + r(20) * 899)}-${Math.floor(1000 + r(21) * 8999)}`,
     websiteUrl: websiteExists ? `https://www.${name.toLowerCase().replace(/\s+/g, '')}.com` : null,
   })
@@ -142,10 +144,10 @@ export function parseNaturalQuery(query: string): { industry: string; location: 
   return null
 }
 
-export function generateMockBusinesses(industry: string, location: string): LocalBusiness[] {
+export function generateMockBusinesses(industry: string, location: string, serviceType = ''): LocalBusiness[] {
   const { industry: ind, location: loc, seed } = parseSearchQuery(industry, location)
   const count = 10 + (seed % 4)
-  return Array.from({ length: count }, (_, i) => generateOneBusiness(ind, loc, seed, i)).sort(
-    (a, b) => b.opportunityScore - a.opportunityScore
+  return Array.from({ length: count }, (_, i) => generateOneBusiness(ind, loc, serviceType, seed, i)).sort(
+    (a, b) => b.fitScore - a.fitScore
   )
 }

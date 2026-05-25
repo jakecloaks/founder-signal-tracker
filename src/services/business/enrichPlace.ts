@@ -44,7 +44,8 @@ function inferSupplementalScores(place: PlaceRecord) {
 
 export function enrichPlaceToLocalBusiness(
   place: PlaceRecord,
-  dataSource: LocalBusiness['dataSource'] = 'google_places'
+  dataSource: LocalBusiness['dataSource'] = 'google_places',
+  serviceType = ''
 ): LocalBusiness {
   const industry = normalizeIndustry(place.industry)
   const supplemental = inferSupplementalScores(place)
@@ -83,14 +84,16 @@ export function enrichPlaceToLocalBusiness(
     placeId: place.placeId,
     phone: place.phone,
     websiteUrl: place.websiteUrl,
+    serviceType,
   })
 }
 
 export function enrichPlacesToBusinesses(
   places: PlaceRecord[],
-  dataSource: LocalBusiness['dataSource'] = 'google_places'
+  dataSource: LocalBusiness['dataSource'] = 'google_places',
+  serviceType = ''
 ): LocalBusiness[] {
   return places
-    .map((p) => enrichPlaceToLocalBusiness(p, dataSource))
-    .sort((a, b) => b.opportunityScore - a.opportunityScore)
+    .map((p) => enrichPlaceToLocalBusiness(p, dataSource, serviceType))
+    .sort((a, b) => b.fitScore - a.fitScore)
 }

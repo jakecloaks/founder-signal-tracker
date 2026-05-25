@@ -2,16 +2,16 @@ import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard,
   MapPin,
-  Building2,
+  Crosshair,
   Settings,
-  Zap,
+  Sparkles,
   Target,
 } from 'lucide-react'
 
 const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Recon' },
-  { to: '/dashboard', icon: MapPin, label: 'Local search', end: false },
-  { to: '/dashboard', icon: Building2, label: 'Targets', end: false },
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/dashboard', icon: MapPin, label: 'Local Search', end: false },
+  { to: '/dashboard', icon: Crosshair, label: 'Targets', end: false },
   { to: '/dashboard', icon: Target, label: 'Opportunities', end: false },
 ]
 
@@ -20,11 +20,11 @@ export function Sidebar() {
     <aside className="glass hidden w-56 shrink-0 flex-col border-r border-zinc-800 md:flex">
       <div className="flex items-center gap-2 border-b border-zinc-800 px-5 py-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
-          <Zap className="h-4 w-4 text-white" />
+          <Sparkles className="h-4 w-4 text-white" />
         </div>
         <div>
-          <p className="text-sm font-semibold text-zinc-100">Founder Signal</p>
-          <p className="text-[10px] text-zinc-500">Agency Intel</p>
+          <p className="text-sm font-semibold text-zinc-100">LocalIQ</p>
+          <p className="text-[10px] text-zinc-500">Agency Prospecting</p>
         </div>
       </div>
 

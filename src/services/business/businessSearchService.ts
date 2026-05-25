@@ -2,15 +2,15 @@ import { mockBusinessProvider } from './mockBusinessProvider'
 import { placesApiBusinessProvider } from './placesApiBusinessProvider'
 import type { BusinessSearchParams, BusinessSearchResult } from './types'
 
-export const DEFAULT_SEARCH = { industry: 'dentists', location: 'Utah' }
+export const DEFAULT_SEARCH = { industry: 'dentists', location: 'Utah', serviceType: 'website redesign' }
 
 export const SUGGESTED_SEARCHES = [
-  { industry: 'dentists', location: 'Utah' },
-  { industry: 'gyms', location: 'Miami' },
-  { industry: 'roofing companies', location: 'Texas' },
-  { industry: 'salons', location: 'London' },
-  { industry: 'law firms', location: 'Chicago' },
-  { industry: 'real estate agencies', location: 'Dubai' },
+  { industry: 'dentists', location: 'Utah', service: 'website redesign' },
+  { industry: 'gyms', location: 'Miami', service: 'social media' },
+  { industry: 'roofing companies', location: 'Texas', service: 'local SEO' },
+  { industry: 'salons', location: 'London', service: 'branding' },
+  { industry: 'law firms', location: 'Chicago', service: 'paid ads' },
+  { industry: 'real estate agencies', location: 'Dubai', service: 'photography' },
 ]
 
 let cachedPlacesAvailable: boolean | null = null
@@ -30,9 +30,10 @@ export function resetProviderCache(): void {
  */
 export async function searchBusinesses(
   industry: string,
-  location: string
+  location: string,
+  serviceType = ''
 ): Promise<BusinessSearchResult> {
-  const params: BusinessSearchParams = { industry, location }
+  const params: BusinessSearchParams = { industry, location, serviceType }
 
   if (await placesAvailable()) {
     try {

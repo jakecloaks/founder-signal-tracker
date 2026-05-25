@@ -15,7 +15,7 @@ export function buildFeedFromBusinesses(businesses: LocalBusiness[]): FeedEvent[
       companyName: b.name,
       signal: signal.slice(0, 60),
       timestamp: b.lastUpdated,
-      intentScore: b.opportunityScore,
+      intentScore: b.fitScore,
     })
   }
 
@@ -51,11 +51,12 @@ export function tickLiveIntelligence(businesses: LocalBusiness[]): LocalBusiness
 export function injectLiveOpportunity(
   businesses: LocalBusiness[],
   industry: string,
-  location: string
+  location: string,
+  serviceType: string
 ): LocalBusiness | null {
   if (Math.random() > 0.35 || businesses.length >= 16) return null
 
-  const fresh = generateMockBusinesses(industry, location)
+  const fresh = generateMockBusinesses(industry, location, serviceType)
   const candidate = fresh.find((f) => !businesses.some((b) => b.name === f.name))
   if (!candidate) return null
 

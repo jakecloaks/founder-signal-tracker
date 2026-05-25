@@ -5,6 +5,7 @@ export type BusinessDataSource = 'mock' | 'google_places'
 export interface BusinessSearchParams {
   industry: string
   location: string
+  serviceType: string
 }
 
 export interface BusinessSearchResult {

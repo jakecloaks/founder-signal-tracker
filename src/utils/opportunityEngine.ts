@@ -1,4 +1,6 @@
 import type {
+  ContactChannelVisibility,
+  ContactMethod,
   DigitalFootprint,
   LocalBusiness,
   OpportunityCategory,
@@ -162,6 +164,168 @@ export function generateOutreachIntelligence(
   }
 }
 
+function normalizeServiceType(raw: string): string {
+  return raw.trim().toLowerCase()
+}
+
+export function generateFitAnalysis(
+  name: string,
+  industry: string,
+  footprint: DigitalFootprint,
+  serviceType: string,
+  opportunityScore: number,
+  rating: number,
+  reviewCount: number
+): { fitScore: number; fitExplanation: string } {
+  const svc = normalizeServiceType(serviceType || 'marketing')
+  const industryLabel = industry.toLowerCase()
+
+  let fitScore = Math.round(opportunityScore * 0.6 + 20)
+
+  const isWebsite = /website|web design|web dev|redesign|landing page/i.test(svc)
+  const isSocial = /social|instagram|facebook|content|tiktok|reels/i.test(svc)
+  const isSEO = /seo|search|google|rank|organic/i.test(svc)
+  const isBranding = /brand|logo|identity|design|visual/i.test(svc)
+  const isAds = /ads|paid|ppc|facebook ads|google ads|advertising/i.test(svc)
+  const isEmail = /email|newsletter|crm|automation/i.test(svc)
+  const isPhoto = /photo|photography|video|media/i.test(svc)
+
+  let explanation = ''
+
+  if (isWebsite) {
+    if (!footprint.websiteExists) {
+      fitScore = Math.min(98, fitScore + 22)
+      explanation = `${name} has no website at all — a blank-slate opportunity for a full site build. With ${reviewCount} Google reviews and ${rating}★, the offline reputation is already there. A professional site could immediately convert local search traffic into booked appointments.`
+    } else if (footprint.websiteQualityScore < 45) {
+      fitScore = Math.min(98, fitScore + 14)
+      explanation = `${name} has an outdated or low-quality website (quality score: ${footprint.websiteQualityScore}/100). A redesign could immediately improve credibility and conversion rate. They have the reviews (${reviewCount}) to back up a premium digital presence.`
+    } else {
+      fitScore = Math.max(20, fitScore - 15)
+      explanation = `${name} already has a reasonably functional website (quality score: ${footprint.websiteQualityScore}/100). A redesign may be a harder sell unless you can position around UX improvements or conversion optimization.`
+    }
+  } else if (isSocial) {
+    if (!footprint.instagramExists && !footprint.facebookExists) {
+      fitScore = Math.min(98, fitScore + 20)
+      explanation = `${name} has zero social media presence — no Instagram, no Facebook. For a ${industryLabel} with ${rating}★ and ${reviewCount} reviews, this is a significant missed opportunity. They're a strong fit for a social media launch and content management package.`
+    } else if (footprint.instagramActivityScore < 40 || footprint.facebookActivityScore < 35) {
+      fitScore = Math.min(98, fitScore + 12)
+      explanation = `${name} has social accounts but low engagement — Instagram activity at ${footprint.instagramActivityScore}/100. Their strong offline reputation (${rating}★, ${reviewCount} reviews) isn't translating to social visibility. A content system could change that.`
+    } else {
+      fitScore = Math.max(20, fitScore - 10)
+      explanation = `${name} already maintains relatively active social channels. They may still benefit from content strategy and growth, but this is a softer fit — position around scaling, not starting from scratch.`
+    }
+  } else if (isSEO) {
+    if (!footprint.websiteExists) {
+      fitScore = Math.min(98, fitScore + 18)
+      explanation = `${name} has no website — they can't rank for anything. Before SEO, they need a site, which means a larger engagement opportunity. Lead with web + SEO as a bundle.`
+    } else if (footprint.websiteQualityScore < 55) {
+      fitScore = Math.min(98, fitScore + 14)
+      explanation = `${name} has a weak website (${footprint.websiteQualityScore}/100 quality) and almost certainly poor local SEO. With ${reviewCount} reviews and a ${rating}★ rating, they have review signals Google loves — they just need on-page optimization and a local SEO strategy to rank.`
+    } else {
+      fitScore = Math.max(25, fitScore - 8)
+      explanation = `${name} has a reasonable web presence. They may already have basic SEO in place. A technical audit could uncover gaps, but this is a moderate-fit opportunity.`
+    }
+  } else if (isBranding) {
+    if (footprint.brandingScore < 40) {
+      fitScore = Math.min(98, fitScore + 18)
+      explanation = `${name} has severely inconsistent or dated branding (score: ${footprint.brandingScore}/100). For a ${industryLabel} with ${rating}★, the brand should command the same trust their reviews do. A branding overhaul could directly impact perceived value and pricing power.`
+    } else if (footprint.brandingScore < 60) {
+      fitScore = Math.min(98, fitScore + 8)
+      explanation = `${name} has mediocre branding (${footprint.brandingScore}/100). There's room to improve cohesion and visual identity, especially if they want to compete on premium positioning.`
+    } else {
+      fitScore = Math.max(20, fitScore - 12)
+      explanation = `${name}'s branding is above average (${footprint.brandingScore}/100). A branding pitch may be a tough sell — consider positioning around a brand refresh rather than a full rebrand.`
+    }
+  } else if (isAds) {
+    const weakPresence = footprint.digitalPresenceStrength < 50
+    if (weakPresence && !footprint.websiteExists) {
+      fitScore = Math.min(98, fitScore + 10)
+      explanation = `${name} lacks a website, making paid ads less effective without a landing page. Consider bundling ads with a landing page build. Good long-term opportunity, but needs foundation work first.`
+    } else if (rating >= 4.5 && reviewCount > 50) {
+      fitScore = Math.min(98, fitScore + 16)
+      explanation = `${name} has strong social proof (${rating}★, ${reviewCount} reviews) — the raw material for high-converting local ad campaigns. A paid ads strategy with review-led creative could deliver fast ROI for this ${industryLabel}.`
+    } else {
+      fitScore = Math.min(98, fitScore + 8)
+      explanation = `${name} could benefit from targeted local ads to increase new customer acquisition. Moderate fit — stronger if paired with a landing page or offer.`
+    }
+  } else if (isPhoto) {
+    const weakImg = footprint.brandingScore < 50 || footprint.websiteQualityScore < 50
+    if (weakImg) {
+      fitScore = Math.min(98, fitScore + 16)
+      explanation = `${name} has low visual quality scores across their digital presence. Professional photography or video would immediately elevate their website, social, and Google Business profile — making them a natural fit for media services.`
+    } else {
+      fitScore = Math.min(98, fitScore + 6)
+      explanation = `${name} could benefit from updated media assets, though their current visual quality is decent. A good pitch would focus on seasonal content or video for social media.`
+    }
+  } else {
+    fitScore = Math.min(98, fitScore + 4)
+    explanation = `${name} is a ${industryLabel} with ${rating}★ and ${reviewCount} reviews but a digital presence score of ${footprint.digitalPresenceStrength}/100. ${footprint.digitalPresenceStrength < 45 ? 'They are under-optimized across the board — a strong prospect for general marketing services.' : 'They have moderate digital presence with specific gaps your services could address.'}`
+  }
+
+  fitScore = Math.min(98, Math.max(12, Math.round(fitScore)))
+  return { fitScore, fitExplanation: explanation }
+}
+
+export function generateContactChannelVisibility(
+  footprint: DigitalFootprint,
+  hasPhone: boolean
+): ContactChannelVisibility {
+  return {
+    instagram: footprint.instagramExists ? footprint.instagramActivityScore : 0,
+    facebook: footprint.facebookExists ? footprint.facebookActivityScore : 0,
+    phone: hasPhone ? Math.round(65 + footprint.reviewQualityScore * 0.2) : 0,
+    website_form: footprint.websiteExists ? Math.round(footprint.websiteQualityScore * 0.75) : 0,
+    email: footprint.websiteExists ? Math.round(30 + footprint.consistencyScore * 0.3) : 10,
+  }
+}
+
+export function determineBestContactMethod(
+  footprint: DigitalFootprint,
+  hasPhone: boolean
+): { method: ContactMethod; reason: string } {
+  const visibility = generateContactChannelVisibility(footprint, hasPhone)
+
+  if (footprint.instagramExists && footprint.instagramActivityScore > 55) {
+    return {
+      method: 'instagram',
+      reason: `Instagram is the best outreach channel — the business actively posts with a ${footprint.instagramActivityScore}/100 activity score. DMs are likely to be seen by the owner directly.`,
+    }
+  }
+
+  if (hasPhone && visibility.phone > 70) {
+    return {
+      method: 'phone',
+      reason: `Direct phone call is recommended. With ${footprint.reviewCount !== undefined ? 'strong' : ''} Google presence, the owner likely handles calls personally. Best for high-urgency, first-impression outreach.`,
+    }
+  }
+
+  if (footprint.websiteExists && footprint.websiteQualityScore > 40) {
+    return {
+      method: 'website_form',
+      reason: `Their website has a contact form (quality score: ${footprint.websiteQualityScore}/100). Reaching out via the form is professional and signals you researched them — good for warm, value-led outreach.`,
+    }
+  }
+
+  if (footprint.facebookExists && footprint.facebookActivityScore > 30) {
+    return {
+      method: 'facebook',
+      reason: `Facebook is their most active channel (activity: ${footprint.facebookActivityScore}/100). Business messaging on Facebook is monitored and often reaches the owner directly.`,
+    }
+  }
+
+  if (hasPhone) {
+    return {
+      method: 'phone',
+      reason: `Phone is the most reliable channel for this business. Their limited digital presence makes direct calls the fastest path to the decision maker.`,
+    }
+  }
+
+  return {
+    method: 'email',
+    reason: `Email outreach via their listed contact is the most practical option. Keep it concise, lead with a specific observation about their digital presence, and include one clear call to action.`,
+  }
+}
+
 export function buildLocalBusiness(
   partial: Omit<
     LocalBusiness,
@@ -177,6 +341,11 @@ export function buildLocalBusiness(
     | 'aiSummary'
     | 'outreachRecommendation'
     | 'suggestedServicePitch'
+    | 'fitScore'
+    | 'fitExplanation'
+    | 'bestContactMethod'
+    | 'bestContactMethodReason'
+    | 'contactChannelVisibility'
   >
 ): LocalBusiness {
   const weaknesses = presenceWeaknesses(partial.footprint)
@@ -201,6 +370,26 @@ export function buildLocalBusiness(
     opportunityScore
   )
 
+  const { fitScore, fitExplanation } = generateFitAnalysis(
+    partial.name,
+    partial.industry,
+    partial.footprint,
+    partial.serviceType,
+    opportunityScore,
+    partial.googleRating,
+    partial.reviewCount
+  )
+
+  const { method: bestContactMethod, reason: bestContactMethodReason } = determineBestContactMethod(
+    partial.footprint,
+    Boolean(partial.phone)
+  )
+
+  const contactChannelVisibility = generateContactChannelVisibility(
+    partial.footprint,
+    Boolean(partial.phone)
+  )
+
   return {
     ...partial,
     opportunityScore,
@@ -213,5 +402,10 @@ export function buildLocalBusiness(
       partial.footprint
     ),
     ...outreach,
+    fitScore,
+    fitExplanation,
+    bestContactMethod,
+    bestContactMethodReason,
+    contactChannelVisibility,
   }
 }

@@ -13,7 +13,7 @@ export class MockBusinessProvider implements IBusinessDataProvider {
   }
 
   async search(params: BusinessSearchParams): Promise<BusinessSearchResult> {
-    const businesses = generateMockBusinesses(params.industry, params.location)
+    const businesses = generateMockBusinesses(params.industry, params.location, params.serviceType)
     return {
       businesses,
       source: 'mock',

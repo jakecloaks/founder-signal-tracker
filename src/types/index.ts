@@ -76,6 +76,16 @@ export type OpportunityCategory =
 
 export type BusinessMaturity = 'early' | 'growing' | 'established' | 'mature'
 
+export type ContactMethod = 'instagram' | 'phone' | 'website_form' | 'email' | 'facebook'
+
+export interface ContactChannelVisibility {
+  instagram: number
+  facebook: number
+  phone: number
+  website_form: number
+  email: number
+}
+
 export interface DigitalFootprint {
   websiteExists: boolean
   websiteQualityScore: number
@@ -122,6 +132,12 @@ export interface LocalBusiness {
   distance: string
   lastUpdated: string
   activeGrowth: boolean
+  serviceType: string
+  fitScore: number
+  fitExplanation: string
+  bestContactMethod: ContactMethod
+  bestContactMethodReason: string
+  contactChannelVisibility: ContactChannelVisibility
 }
 
 export type BusinessFilterKey =

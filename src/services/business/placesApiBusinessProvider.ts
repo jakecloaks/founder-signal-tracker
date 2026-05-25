@@ -56,7 +56,7 @@ export class PlacesApiBusinessProvider implements IBusinessDataProvider {
 
     if (data.places?.length) {
       return {
-        businesses: enrichPlacesToBusinesses(data.places, data.source),
+        businesses: enrichPlacesToBusinesses(data.places, data.source, params.serviceType),
         source: data.source,
         query: params,
       }
