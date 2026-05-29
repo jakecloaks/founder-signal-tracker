@@ -28,61 +28,34 @@ export function LocalBusinessSearch({
   }
 
   const inputClass =
-    'w-full rounded-lg border border-stone-200 bg-white py-2.5 pl-9 pr-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 shadow-sm transition-all disabled:opacity-50'
+    'w-full rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] py-2.5 pl-9 pr-3 text-sm text-[#FAFAF9] placeholder:text-[#555] focus:border-[#4A90E2]/50 focus:outline-none focus:ring-2 focus:ring-[#4A90E2]/10 transition-all disabled:opacity-50'
 
   return (
-    <div className="border-b border-stone-200 bg-stone-50/60 px-4 py-3 sm:px-5">
+    <div className="border-b border-[#1E1E1E] bg-[#111] px-4 py-3 sm:px-5">
       <form onSubmit={handleSubmit} className="flex flex-col gap-2 lg:flex-row lg:items-center">
         <div className="flex flex-1 flex-col gap-2 sm:flex-row">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
-            <input
-              type="text"
-              placeholder="Business niche — dentists, gyms…"
-              value={industry}
-              onChange={(e) => setIndustry(e.target.value)}
-              disabled={loading}
-              className={inputClass}
-            />
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#555]" />
+            <input type="text" placeholder="Business niche — dentists, gyms…" value={industry} onChange={(e) => setIndustry(e.target.value)} disabled={loading} className={inputClass} />
           </div>
           <div className="relative flex-1">
-            <MapPin className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
-            <input
-              type="text"
-              placeholder="Location — Utah, Miami…"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              disabled={loading}
-              className={inputClass}
-            />
+            <MapPin className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#555]" />
+            <input type="text" placeholder="Location — Utah, Miami…" value={location} onChange={(e) => setLocation(e.target.value)} disabled={loading} className={inputClass} />
           </div>
           <div className="relative flex-1">
-            <Briefcase className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
-            <input
-              type="text"
-              placeholder="Your service — website redesign, SEO…"
-              value={serviceType}
-              onChange={(e) => setServiceType(e.target.value)}
-              disabled={loading}
-              className={inputClass}
-            />
+            <Briefcase className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#555]" />
+            <input type="text" placeholder="Your service — website redesign, SEO…" value={serviceType} onChange={(e) => setServiceType(e.target.value)} disabled={loading} className={inputClass} />
           </div>
         </div>
         <button
           type="submit"
           disabled={loading || !industry.trim() || !location.trim()}
-          className="flex shrink-0 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-500 hover:shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex shrink-0 items-center justify-center gap-2 rounded-lg bg-[#4A90E2] px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#3D7CC9] disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {loading ? (
-            <>
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Scanning…
-            </>
+            <><Loader2 className="h-3.5 w-3.5 animate-spin" />Scanning…</>
           ) : (
-            <>
-              <MapPin className="h-3.5 w-3.5" />
-              Find opportunities
-            </>
+            <><MapPin className="h-3.5 w-3.5" />Find opportunities</>
           )}
         </button>
       </form>
@@ -99,7 +72,7 @@ export function LocalBusinessSearch({
               setServiceType(s.service)
               onSearch(s.industry, s.location, s.service)
             }}
-            className="rounded-md border border-stone-200 bg-white px-2 py-1 text-[11px] font-medium text-stone-500 shadow-sm transition-colors hover:border-stone-300 hover:text-stone-700 disabled:opacity-40"
+            className="rounded-md border border-[#2A2A2A] bg-[#1A1A1A] px-2 py-1 text-[11px] font-medium text-[#888] transition-colors hover:border-[#333] hover:text-[#FAFAF9] disabled:opacity-40"
           >
             {s.industry} in {s.location}
           </button>

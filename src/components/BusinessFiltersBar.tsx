@@ -14,10 +14,10 @@ export function BusinessFiltersBar({ filters, onChange }: BusinessFiltersBarProp
           key={opt.key}
           type="button"
           onClick={() => onChange(opt.key)}
-          className={`shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+          className={`shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-all ${
             filters.active === opt.key
-              ? 'border-indigo-200 bg-indigo-50 text-indigo-700'
-              : 'border-stone-200 bg-white text-stone-500 hover:border-stone-300 hover:text-stone-700'
+              ? 'border-[#4A90E2]/40 bg-[#4A90E2]/10 text-[#4A90E2]'
+              : 'border-[#2A2A2A] bg-transparent text-[#888] hover:border-[#333] hover:text-[#FAFAF9]'
           }`}
         >
           {opt.label}

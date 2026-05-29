@@ -14,11 +14,8 @@ export function SaveButton({ business, savedLeadsHook, className = '' }: SaveBut
 
   function toggle(e: React.MouseEvent) {
     e.stopPropagation()
-    if (saved) {
-      removeLead(business.id)
-    } else {
-      saveLead(business)
-    }
+    if (saved) removeLead(business.id)
+    else saveLead(business)
   }
 
   return (
@@ -28,15 +25,11 @@ export function SaveButton({ business, savedLeadsHook, className = '' }: SaveBut
       title={saved ? 'Remove from saved' : 'Save lead'}
       className={`flex items-center justify-center rounded-lg p-1.5 transition-colors ${
         saved
-          ? 'text-indigo-600 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100'
-          : 'text-stone-400 bg-transparent hover:text-stone-600 hover:bg-stone-100'
+          ? 'text-[#4A90E2] bg-[#4A90E2]/10 border border-[#4A90E2]/30'
+          : 'text-[#555] bg-transparent hover:text-[#FAFAF9] hover:bg-[#1E1E1E]'
       } ${className}`}
     >
-      {saved ? (
-        <BookmarkCheck className="h-3.5 w-3.5" />
-      ) : (
-        <Bookmark className="h-3.5 w-3.5" />
-      )}
+      {saved ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
     </button>
   )
 }

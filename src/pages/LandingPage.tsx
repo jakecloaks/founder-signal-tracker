@@ -1,37 +1,28 @@
 import { Link } from 'react-router-dom'
 import {
-  Radar,
-  Target,
-  TrendingUp,
-  ArrowRight,
-  Radio,
-  Briefcase,
-  MessageCircle,
-  Check,
-  Star,
-  Zap,
-  Building2,
+  Target, TrendingUp, ArrowRight, Radio,
+  Briefcase, MessageCircle, Check, Star, Zap, Building2,
 } from 'lucide-react'
-import { Button } from '../components/Button'
+import { SignalScopeLogo, SignalIcon } from '../components/SignalScopeLogo'
 import { searchBusinesses } from '../services/business'
 import { useEffect, useState } from 'react'
 import type { LocalBusiness } from '../types'
 
 const features = [
   {
-    icon: Radar,
+    icon: Radio,
     title: 'Local business recon',
-    description: 'Enter a niche, city, and your service type. Get prospects ranked by service fit — not generic signals.',
+    description: 'Enter a niche, city, and your service. Get prospects ranked by service fit — not generic signals.',
   },
   {
     icon: Briefcase,
     title: 'Service-aware fit scoring',
-    description: 'Each business is scored specifically against your offering. Website redesign, SEO, social — all different scores.',
+    description: 'Each business is scored specifically for your offering. Website redesign, SEO, social — all different scores.',
   },
   {
     icon: Target,
     title: 'AI outreach intelligence',
-    description: 'Custom openers, pain points, and pitches tailored to each business and your specific service.',
+    description: 'Custom openers, pain points, and pitches tailored to each business and your service.',
   },
   {
     icon: TrendingUp,
@@ -76,48 +67,35 @@ const plans = [
     price: 19,
     description: 'For freelancers starting out',
     searches: '20 searches/month',
+    highlighted: false,
     features: ['20 searches/month', 'Full business profiles', 'AI fit scoring', 'Saved leads (50)'],
     cta: 'Start free trial',
-    highlighted: false,
   },
   {
     name: 'Pro',
     price: 49,
     description: 'For agencies actively prospecting',
     searches: 'Unlimited searches',
-    features: [
-      'Unlimited searches',
-      'Full AI insights',
-      'Contact channel scoring',
-      'Lead exports (CSV)',
-      'Saved leads (unlimited)',
-      'Collections & notes',
-    ],
-    cta: 'Start free trial',
     highlighted: true,
+    features: ['Unlimited searches', 'Full AI insights', 'Contact channel scoring', 'Lead exports (CSV)', 'Saved leads (unlimited)', 'Collections & notes'],
+    cta: 'Start free trial',
   },
   {
     name: 'Agency',
     price: 99,
     description: 'For growing teams',
     searches: 'Unlimited everything',
-    features: [
-      'Everything in Pro',
-      'Up to 5 team members',
-      'Bulk analysis mode',
-      'Advanced filters',
-      'White-label reports',
-    ],
-    cta: 'Start free trial',
     highlighted: false,
+    features: ['Everything in Pro', 'Up to 5 team members', 'Bulk analysis mode', 'Advanced filters', 'White-label reports'],
+    cta: 'Start free trial',
   },
 ]
 
 function fitBadgeClass(score: number) {
-  if (score >= 80) return 'bg-orange-50 text-orange-700 border-orange-200'
-  if (score >= 65) return 'bg-indigo-50 text-indigo-700 border-indigo-200'
-  if (score >= 45) return 'bg-amber-50 text-amber-700 border-amber-200'
-  return 'bg-stone-100 text-stone-500 border-stone-200'
+  if (score >= 80) return 'bg-orange-500/15 text-orange-400 border-orange-500/25'
+  if (score >= 65) return 'bg-[#4A90E2]/15 text-[#4A90E2] border-[#4A90E2]/25'
+  if (score >= 45) return 'bg-amber-500/15 text-amber-400 border-amber-500/25'
+  return 'bg-white/5 text-[#888] border-[#2A2A2A]'
 }
 
 export function LandingPage() {
@@ -129,86 +107,79 @@ export function LandingPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#0D0D0D] text-[#FAFAF9]">
       {/* Nav */}
-      <nav className="sticky top-0 z-30 border-b border-stone-200 bg-white/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-600 shadow-sm">
-              <Radar className="h-3.5 w-3.5 text-white" />
-            </div>
-            <span className="text-sm font-bold text-stone-900">SignalScope</span>
-            <span className="hidden rounded-full border border-stone-200 bg-stone-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-stone-500 sm:inline">
-              Agency Intel
-            </span>
+      <nav className="sticky top-0 z-30 border-b border-[#1E1E1E] bg-[#0D0D0D]/95 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <SignalScopeLogo size="md" />
+          <div className="hidden items-center gap-8 sm:flex">
+            <a href="#features" className="text-sm text-[#888] hover:text-[#FAFAF9] transition-colors">Features</a>
+            <a href="#pricing" className="text-sm text-[#888] hover:text-[#FAFAF9] transition-colors">Pricing</a>
+            <Link to="/auth" className="text-sm text-[#888] hover:text-[#FAFAF9] transition-colors">Sign in</Link>
           </div>
-          <div className="flex items-center gap-2">
-            <Link to="/auth" className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors px-3 py-2">
-              Sign in
-            </Link>
-            <Link to="/auth">
-              <Button size="sm" className="shadow-sm">
-                Get started free
-              </Button>
-            </Link>
-          </div>
+          <Link to="/auth">
+            <button type="button" className="rounded-lg bg-[#4A90E2] px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-[#3D7CC9]">
+              Get Started
+            </button>
+          </Link>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="hero-glow px-6 pb-16 pt-16">
-        <div className="mx-auto max-w-4xl text-center">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-4 py-1.5 text-xs font-semibold text-indigo-700">
-            <span className="live-dot h-1.5 w-1.5 rounded-full bg-indigo-500" />
-            5 free searches — no credit card needed
+      <section className="hero-glow px-6 pb-20 pt-20 text-center">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#2A2A2A] bg-[#1A1A1A] px-4 py-1.5 text-xs font-medium text-[#888]">
+            <span className="live-dot h-1.5 w-1.5 rounded-full bg-[#4A90E2]" />
+            AI-powered intelligence
           </div>
-          <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-stone-900 sm:text-5xl lg:text-6xl">
-            Find local businesses that<br />
-            <span className="text-indigo-600">need your service.</span>
+          <h1 className="heading-display text-[#FAFAF9]">
+            Find local businesses<br />ready to close
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-stone-500">
-            Search by niche, location, and what you sell. Get a scored list of local businesses ranked by how much they need your specific service — with AI outreach for each one.
+          <p className="mx-auto mt-6 max-w-lg text-base leading-relaxed text-[#888]">
+            AI-powered opportunity intelligence that analyzes online presence, branding quality, and business signals to identify your best prospects.
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link to="/dashboard">
-              <Button className="gap-2 px-6 py-2.5 text-sm font-bold shadow-md hover:shadow-lg transition-all">
-                Start finding prospects
+              <button type="button" className="flex items-center gap-2 rounded-lg bg-[#4A90E2] px-6 py-3 text-sm font-bold text-white transition-all hover:bg-[#3D7CC9]">
+                Start Free Trial
                 <ArrowRight className="h-4 w-4" />
-              </Button>
+              </button>
             </Link>
-            <Link to="/auth" className="text-sm font-medium text-stone-500 hover:text-stone-800 transition-colors">
-              Create free account →
+            <Link to="/dashboard">
+              <button type="button" className="rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] px-6 py-3 text-sm font-semibold text-[#FAFAF9] transition-all hover:bg-[#222] hover:border-[#333]">
+                Watch Demo
+              </button>
             </Link>
           </div>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-xs text-stone-400">
-            <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-500" /> No credit card</span>
-            <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-500" /> Service-aware scoring</span>
-            <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-500" /> AI outreach per business</span>
-            <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-500" /> Best contact method</span>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-xs text-[#555]">
+            <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-[#4A90E2]" />No credit card</span>
+            <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-[#4A90E2]" />Service-aware scoring</span>
+            <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-[#4A90E2]" />AI outreach per business</span>
+            <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-[#4A90E2]" />Best contact method</span>
           </div>
         </div>
       </section>
 
       {/* Live demo panel */}
-      <section className="border-y border-stone-100 bg-stone-50 px-6 py-14">
+      <section className="border-y border-[#1E1E1E] bg-[#111] px-6 py-14">
         <div className="mx-auto max-w-4xl">
           <div className="mb-5 flex items-center gap-2.5">
             <span className="live-dot h-1.5 w-1.5 rounded-full bg-orange-500" />
-            <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#555]">
               Live example — dentists in Utah · website redesign
             </p>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-lg">
+          <div className="overflow-hidden rounded-2xl border border-[#2A2A2A] bg-[#111]" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
             {/* Fake toolbar */}
-            <div className="flex items-center gap-2 border-b border-stone-100 bg-stone-50 px-4 py-2.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-red-300" />
-              <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
-              <span className="ml-3 text-[11px] font-medium text-stone-400">
+            <div className="flex items-center gap-2 border-b border-[#1E1E1E] bg-[#0D0D0D] px-4 py-2.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#333]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#333]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#333]" />
+              <span className="ml-3 text-[11px] font-medium text-[#555]">
                 signalscope.app/dashboard · dentists in Utah · website redesign
               </span>
             </div>
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-[#1E1E1E]">
               {previewBusinesses.length === 0
                 ? Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="flex items-center gap-4 px-5 py-4">
@@ -222,26 +193,24 @@ export function LandingPage() {
                     </div>
                   ))
                 : previewBusinesses.map((b) => (
-                    <div key={b.id} className="flex items-start gap-3 px-5 py-4 hover:bg-stone-50 transition-colors">
+                    <div key={b.id} className="flex items-start gap-3 px-5 py-4 transition-colors hover:bg-[#141414]">
                       <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-xs font-bold ${
-                        b.fitScore >= 80 ? 'bg-orange-50 text-orange-700 border-orange-200' :
-                        b.fitScore >= 65 ? 'bg-indigo-50 text-indigo-700 border-indigo-200' :
-                        'bg-stone-100 text-stone-600 border-stone-200'
+                        b.fitScore >= 80 ? 'bg-orange-500/15 text-orange-400 border-orange-500/25' :
+                        b.fitScore >= 65 ? 'bg-[#4A90E2]/15 text-[#4A90E2] border-[#4A90E2]/25' :
+                        'bg-white/5 text-[#888] border-[#2A2A2A]'
                       }`}>
                         {b.logo}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-stone-900">{b.name}</p>
-                        <p className="mt-0.5 text-xs text-stone-500">
-                          {b.googleRating}★ · {b.reviewCount} reviews · {b.industry}
-                        </p>
-                        <p className="mt-1 line-clamp-1 text-[11px] text-stone-400">{b.fitExplanation}</p>
+                        <p className="font-semibold text-[#FAFAF9]">{b.name}</p>
+                        <p className="mt-0.5 text-xs text-[#888]">{b.googleRating}★ · {b.reviewCount} reviews · {b.industry}</p>
+                        <p className="mt-1 line-clamp-1 text-[11px] text-[#555]">{b.fitExplanation}</p>
                       </div>
                       <div className="flex shrink-0 flex-col items-end gap-1.5">
                         <span className={`inline-flex min-w-[2.2rem] items-center justify-center rounded-lg border px-2 py-0.5 text-sm font-bold tabular-nums ${fitBadgeClass(b.fitScore)}`}>
                           {b.fitScore}
                         </span>
-                        <span className="flex items-center gap-1 rounded border border-stone-200 bg-stone-50 px-1.5 py-0.5 text-[10px] font-medium text-stone-500">
+                        <span className="flex items-center gap-1 rounded border border-[#2A2A2A] bg-[#1A1A1A] px-1.5 py-0.5 text-[10px] font-medium text-[#888]">
                           <MessageCircle className="h-2.5 w-2.5" />
                           {b.bestContactMethod?.replace('_', ' ') ?? 'phone'}
                         </span>
@@ -254,27 +223,22 @@ export function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="px-6 py-16">
+      <section id="features" className="px-6 py-16">
         <div className="mx-auto max-w-5xl">
           <div className="text-center">
-            <h2 className="text-2xl font-extrabold text-stone-900 sm:text-3xl">
-              Built for outbound agency work
-            </h2>
-            <p className="mt-3 text-sm text-stone-500 max-w-lg mx-auto">
+            <h2 className="heading-1 text-[#FAFAF9]">Built for outbound agency work</h2>
+            <p className="mt-3 text-sm text-[#888] max-w-lg mx-auto">
               Stop cold-searching directories. Find businesses that actually match your service.
             </p>
           </div>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {features.map((f) => (
-              <div
-                key={f.title}
-                className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
-              >
-                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg border border-indigo-100 bg-indigo-50">
-                  <f.icon className="h-4 w-4 text-indigo-600" />
+              <div key={f.title} className="rounded-xl border border-[#2A2A2A] bg-[#1A1A1A] p-5 transition-colors hover:border-[#333] hover:bg-[#1E1E1E]">
+                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg border border-[#4A90E2]/20 bg-[#4A90E2]/10">
+                  <f.icon className="h-4 w-4 text-[#4A90E2]" />
                 </div>
-                <h3 className="text-sm font-bold text-stone-900">{f.title}</h3>
-                <p className="mt-1.5 text-xs leading-relaxed text-stone-500">{f.description}</p>
+                <h3 className="text-sm font-bold text-[#FAFAF9]">{f.title}</h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-[#888]">{f.description}</p>
               </div>
             ))}
           </div>
@@ -282,54 +246,54 @@ export function LandingPage() {
       </section>
 
       {/* Signals + Channel chart */}
-      <section className="border-y border-stone-100 bg-stone-50 px-6 py-16">
+      <section className="border-y border-[#1E1E1E] bg-[#111] px-6 py-16">
         <div className="mx-auto max-w-5xl">
           <div className="grid items-start gap-12 lg:grid-cols-2">
             <div>
-              <h2 className="text-2xl font-extrabold text-stone-900">Signals we detect</h2>
-              <p className="mt-2 text-sm text-stone-500 max-w-sm">
+              <h2 className="heading-2 text-[#FAFAF9]">Signals we detect</h2>
+              <p className="mt-2 text-sm text-[#888] max-w-sm">
                 Weaknesses that make a business a strong fit for your specific service.
               </p>
               <ul className="mt-6 grid gap-2 sm:grid-cols-2">
                 {signals.map((s) => (
-                  <li
-                    key={s}
-                    className="flex items-center gap-2.5 rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-xs font-medium text-stone-700 shadow-sm"
-                  >
-                    <Radio className="h-3.5 w-3.5 shrink-0 text-indigo-500" />
+                  <li key={s} className="flex items-center gap-2.5 rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] px-3 py-2.5 text-xs font-medium text-[#888]">
+                    <SignalIcon size={14} />
                     {s}
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
-              <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-stone-400">
+            <div className="rounded-xl border border-[#2A2A2A] bg-[#1A1A1A] p-5">
+              <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-[#555]">
                 Contact channel visibility scoring
               </p>
               <div className="space-y-3">
                 {[
-                  { label: 'Instagram DM', value: 78, color: 'bg-pink-500', best: true },
-                  { label: 'Direct call', value: 64, color: 'bg-emerald-500', best: false },
-                  { label: 'Website form', value: 41, color: 'bg-amber-500', best: false },
-                  { label: 'Facebook', value: 28, color: 'bg-stone-300', best: false },
+                  { label: 'Instagram DM', value: 78, isBest: true },
+                  { label: 'Direct call', value: 64, isBest: false },
+                  { label: 'Website form', value: 41, isBest: false },
+                  { label: 'Facebook', value: 28, isBest: false },
                 ].map((row) => (
                   <div key={row.label} className="flex items-center gap-3">
-                    <span className={`w-28 shrink-0 text-xs ${row.best ? 'font-semibold text-stone-800' : 'text-stone-500'}`}>
+                    <span className={`w-28 shrink-0 text-xs ${row.isBest ? 'font-semibold text-[#FAFAF9]' : 'text-[#888]'}`}>
                       {row.label}
-                      {row.best && (
-                        <span className="ml-1 rounded border border-emerald-200 bg-emerald-50 px-1 text-[9px] font-bold text-emerald-700">
+                      {row.isBest && (
+                        <span className="ml-1 rounded border border-[#4A90E2]/25 bg-[#4A90E2]/10 px-1 text-[9px] font-bold text-[#4A90E2]">
                           Best
                         </span>
                       )}
                     </span>
-                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-stone-100">
-                      <div className={`h-full rounded-full bar-fill ${row.color}`} style={{ width: `${row.value}%` }} />
+                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#2A2A2A]">
+                      <div
+                        className={`h-full bar-fill rounded-full ${row.isBest ? 'bg-[#4A90E2]' : 'bg-[#333]'}`}
+                        style={{ width: `${row.value}%` }}
+                      />
                     </div>
-                    <span className="w-7 text-right text-xs tabular-nums text-stone-400">{row.value}</span>
+                    <span className="w-7 text-right text-xs tabular-nums text-[#555]">{row.value}</span>
                   </div>
                 ))}
               </div>
-              <p className="mt-4 text-[11px] text-stone-400 leading-relaxed">
+              <p className="mt-4 text-[11px] text-[#555] leading-relaxed">
                 AI determines the best channel to reach each business based on their presence, activity score, and engagement patterns.
               </p>
             </div>
@@ -340,23 +304,23 @@ export function LandingPage() {
       {/* Testimonials */}
       <section className="px-6 py-16">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-center text-xl font-extrabold text-stone-900">What agencies are saying</h2>
+          <h2 className="text-center text-xl font-bold text-[#FAFAF9] tracking-tight">What agencies are saying</h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {testimonials.map((t) => (
-              <div key={t.name} className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
+              <div key={t.name} className="rounded-xl border border-[#2A2A2A] bg-[#1A1A1A] p-5">
                 <div className="flex gap-0.5">
                   {Array.from({ length: t.stars }).map((_, i) => (
                     <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <p className="mt-3 text-sm leading-relaxed text-stone-700">"{t.quote}"</p>
+                <p className="mt-3 text-sm leading-relaxed text-[#888]">"{t.quote}"</p>
                 <div className="mt-4 flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#4A90E2]/15 border border-[#4A90E2]/25 text-xs font-bold text-[#4A90E2]">
                     {t.name[0]}
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-stone-900">{t.name}</p>
-                    <p className="text-[10px] text-stone-400">{t.role}</p>
+                    <p className="text-xs font-semibold text-[#FAFAF9]">{t.name}</p>
+                    <p className="text-[10px] text-[#555]">{t.role}</p>
                   </div>
                 </div>
               </div>
@@ -366,40 +330,39 @@ export function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="border-y border-stone-100 bg-stone-50 px-6 py-16">
+      <section id="pricing" className="border-y border-[#1E1E1E] bg-[#111] px-6 py-16">
         <div className="mx-auto max-w-5xl">
           <div className="text-center">
-            <h2 className="text-2xl font-extrabold text-stone-900 sm:text-3xl">Simple, outcome-based pricing</h2>
-            <p className="mt-3 text-sm text-stone-500">Priced around the value of finding one good client.</p>
+            <h2 className="heading-1 text-[#FAFAF9]">Simple, outcome-based pricing</h2>
+            <p className="mt-3 text-sm text-[#888]">Priced around the value of finding one good client.</p>
           </div>
           <div className="mt-10 grid gap-5 sm:grid-cols-3">
             {plans.map((plan) => (
               <div
                 key={plan.name}
-                className={`relative overflow-hidden rounded-2xl border bg-white ${
+                className={`relative overflow-hidden rounded-2xl border ${
                   plan.highlighted
-                    ? 'border-indigo-300 shadow-xl shadow-indigo-500/10'
-                    : 'border-stone-200 shadow-sm'
+                    ? 'border-[#4A90E2]/40 bg-[#4A90E2]/5'
+                    : 'border-[#2A2A2A] bg-[#1A1A1A]'
                 }`}
               >
                 {plan.highlighted && (
-                  <div className="bg-indigo-600 px-5 py-1 text-center text-[10px] font-bold uppercase tracking-widest text-white">
+                  <div className="border-b border-[#4A90E2]/20 bg-[#4A90E2]/10 px-5 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest text-[#4A90E2]">
                     Most popular
                   </div>
                 )}
                 <div className="p-5">
-                  <h3 className="font-bold text-stone-900">{plan.name}</h3>
-                  <p className="mt-0.5 text-xs text-stone-500">{plan.description}</p>
+                  <h3 className="font-bold text-[#FAFAF9]">{plan.name}</h3>
+                  <p className="mt-0.5 text-xs text-[#888]">{plan.description}</p>
                   <div className="mt-4 flex items-end gap-1">
-                    <span className="text-4xl font-extrabold text-stone-900">${plan.price}</span>
-                    <span className="mb-1 text-sm text-stone-400">/mo</span>
+                    <span className="text-4xl font-extrabold tracking-tight text-[#FAFAF9]">${plan.price}</span>
+                    <span className="mb-1 text-sm text-[#555]">/mo</span>
                   </div>
-                  <p className="mt-1 text-xs font-semibold text-indigo-600">{plan.searches}</p>
+                  <p className="mt-1 text-xs font-semibold text-[#4A90E2]">{plan.searches}</p>
                   <ul className="mt-5 space-y-2.5">
                     {plan.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-xs text-stone-600">
-                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-indigo-500" />
-                        {f}
+                      <li key={f} className="flex items-start gap-2 text-xs text-[#888]">
+                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#4A90E2]" />{f}
                       </li>
                     ))}
                   </ul>
@@ -408,14 +371,14 @@ export function LandingPage() {
                       type="button"
                       className={`mt-5 w-full rounded-lg py-2.5 text-sm font-bold transition-all ${
                         plan.highlighted
-                          ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-sm hover:shadow-md'
-                          : 'bg-stone-900 text-white hover:bg-stone-800'
+                          ? 'bg-[#4A90E2] text-white hover:bg-[#3D7CC9]'
+                          : 'bg-[#1E1E1E] text-[#FAFAF9] hover:bg-[#252525] border border-[#2A2A2A]'
                       }`}
                     >
                       {plan.cta}
                     </button>
                   </Link>
-                  <p className="mt-2 text-center text-[10px] text-stone-400">7-day free trial · No credit card</p>
+                  <p className="mt-2 text-center text-[10px] text-[#555]">7-day free trial · No credit card</p>
                 </div>
               </div>
             ))}
@@ -424,40 +387,31 @@ export function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="px-6 py-16">
-        <div className="mx-auto max-w-2xl text-center">
-          <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-500/20">
-            <Building2 className="h-8 w-8 text-white" />
+      <section className="px-6 py-16 text-center">
+        <div className="mx-auto max-w-2xl">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#4A90E2]/10 border border-[#4A90E2]/20">
+            <Building2 className="h-8 w-8 text-[#4A90E2]" />
           </div>
-          <h2 className="mt-5 text-2xl font-extrabold text-stone-900">
-            Start finding high-fit prospects today
-          </h2>
-          <p className="mt-3 text-sm text-stone-500">
-            Search any niche, any city, for any service. Pitch with confidence.
-          </p>
+          <h2 className="mt-5 heading-1 text-[#FAFAF9]">Start finding high-fit prospects today</h2>
+          <p className="mt-3 text-sm text-[#888]">Search any niche, any city, for any service. Pitch with confidence.</p>
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link to="/dashboard">
-              <Button className="gap-2 px-6 py-2.5 text-sm font-bold shadow-md hover:shadow-lg transition-all">
+              <button type="button" className="flex items-center gap-2 rounded-lg bg-[#4A90E2] px-6 py-3 text-sm font-bold text-white transition-all hover:bg-[#3D7CC9]">
                 <Zap className="h-4 w-4" />
                 Open SignalScope free
-              </Button>
+              </button>
             </Link>
-            <a href="#pricing" className="text-sm font-medium text-stone-500 hover:text-stone-800 transition-colors">
+            <a href="#pricing" className="text-sm font-medium text-[#888] hover:text-[#FAFAF9] transition-colors">
               View pricing →
             </a>
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-stone-200 px-6 py-6">
+      <footer className="border-t border-[#1E1E1E] px-6 py-6">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-600">
-              <Radar className="h-3 w-3 text-white" />
-            </div>
-            <span className="text-sm font-semibold text-stone-600">SignalScope</span>
-          </div>
-          <p className="text-xs text-stone-400">
+          <SignalScopeLogo size="sm" />
+          <p className="text-xs text-[#555]">
             © {new Date().getFullYear()} SignalScope · AI-powered agency prospecting
           </p>
         </div>

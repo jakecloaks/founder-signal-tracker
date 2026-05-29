@@ -17,9 +17,9 @@ function Chip({
       className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-medium ${
         active
           ? weak
-            ? 'bg-amber-50 text-amber-700 border-amber-200'
-            : 'bg-stone-100 text-stone-700 border-stone-200'
-          : 'bg-stone-50 text-stone-400 border-stone-200'
+            ? 'bg-amber-500/10 text-amber-400 border-amber-500/25'
+            : 'bg-white/8 text-[#FAFAF9] border-[#333]'
+          : 'bg-transparent text-[#555] border-[#2A2A2A]'
       }`}
     >
       <Icon className="h-2.5 w-2.5 shrink-0" />
