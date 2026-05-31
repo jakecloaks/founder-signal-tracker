@@ -14,7 +14,14 @@ export interface BusinessSearchResult {
   query: BusinessSearchParams
 }
 
-/** Normalized place from any provider before opportunity enrichment */
+export interface WebsiteAnalysis {
+  websiteExists: boolean
+  isHttps: boolean
+  isLive: boolean
+  qualityScore: number
+}
+
+/** Normalized place from Google Places before opportunity enrichment */
 export interface PlaceRecord {
   placeId: string
   name: string
@@ -23,9 +30,12 @@ export interface PlaceRecord {
   reviewCount: number
   websiteUrl: string | null
   phone: string | null
+  googleMapsUrl: string | null
+  photoName: string | null
   industry: string
   location: string
   distance?: string
+  websiteAnalysis: WebsiteAnalysis
 }
 
 export interface IBusinessDataProvider {

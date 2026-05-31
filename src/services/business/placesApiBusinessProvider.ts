@@ -5,13 +5,11 @@ import type {
   PlaceRecord,
 } from './types'
 import { enrichPlacesToBusinesses } from './enrichPlace'
-import { mockBusinessProvider } from './mockBusinessProvider'
 
 interface PlacesSearchResponse {
-  source: 'google_places' | 'mock'
+  source: 'google_places'
   places?: PlaceRecord[]
   businesses?: import('../../types').LocalBusiness[]
-  useClientMock?: boolean
   error?: string
 }
 
@@ -42,29 +40,25 @@ export class PlacesApiBusinessProvider implements IBusinessDataProvider {
       throw new Error(data.error || `Places search failed (${res.status})`)
     }
 
-    if (data.useClientMock) {
-      return mockBusinessProvider.search(params)
-    }
-
     if (data.businesses?.length) {
       return {
         businesses: data.businesses,
-        source: data.source === 'google_places' ? 'google_places' : 'mock',
+        source: 'google_places',
         query: params,
       }
     }
 
     if (data.places?.length) {
       return {
-        businesses: enrichPlacesToBusinesses(data.places, data.source, params.serviceType),
-        source: data.source,
+        businesses: enrichPlacesToBusinesses(data.places, 'google_places', params.serviceType),
+        source: 'google_places',
         query: params,
       }
     }
 
     return {
       businesses: [],
-      source: data.source,
+      source: 'google_places',
       query: params,
     }
   }

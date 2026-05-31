@@ -1,4 +1,3 @@
-import { mockBusinessProvider } from './mockBusinessProvider'
 import { placesApiBusinessProvider } from './placesApiBusinessProvider'
 import type { BusinessSearchParams, BusinessSearchResult } from './types'
 
@@ -26,20 +25,9 @@ export const TARGET_INDUSTRIES = [
   'Med Spa',
 ]
 
-let cachedPlacesAvailable: boolean | null = null
-
-async function placesAvailable(): Promise<boolean> {
-  if (cachedPlacesAvailable !== null) return cachedPlacesAvailable
-  cachedPlacesAvailable = await placesApiBusinessProvider.isAvailable()
-  return cachedPlacesAvailable
-}
-
-export function resetProviderCache(): void {
-  cachedPlacesAvailable = null
-}
-
 /**
- * Primary search entry — tries Google Places API via backend, falls back to mock.
+ * Primary search — always uses Google Places API.
+ * Throws if the API key is not configured or if the search fails.
  */
 export async function searchBusinesses(
   industry: string,
@@ -47,16 +35,7 @@ export async function searchBusinesses(
   serviceType = 'website redesign'
 ): Promise<BusinessSearchResult> {
   const params: BusinessSearchParams = { industry, location, serviceType }
-
-  if (await placesAvailable()) {
-    try {
-      return await placesApiBusinessProvider.search(params)
-    } catch (err) {
-      console.warn('[businessSearch] Places API failed, using mock:', err)
-    }
-  }
-
-  return mockBusinessProvider.search(params)
+  return placesApiBusinessProvider.search(params)
 }
 
-export { mockBusinessProvider, placesApiBusinessProvider }
+export { placesApiBusinessProvider }

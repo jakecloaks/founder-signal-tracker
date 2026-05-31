@@ -87,13 +87,36 @@ app.post('/api/places/search', async (req, res) => {
   }
   try {
     const result = await resolvePlacesSearch({ industry, location })
-    if (result.useClientMock) {
-      return res.json({ source: 'mock', useClientMock: true, query: result.query })
-    }
     res.json({ source: result.source, places: result.places, query: result.query })
   } catch (err) {
     console.error('[places/search]', err)
-    res.status(500).json({ error: err instanceof Error ? err.message : 'Places search failed' })
+    const message = err instanceof Error ? err.message : 'Places search failed'
+    const status = message.includes('not configured') ? 503 : 500
+    res.status(status).json({ error: message })
+  }
+})
+
+/* ── Places photo proxy ─────────────────────────────────────────── */
+app.get('/api/places/photo', async (req, res) => {
+  const ref = typeof req.query.ref === 'string' ? req.query.ref : ''
+  if (!ref) return res.status(400).json({ error: 'Photo reference required' })
+
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY
+  if (!apiKey) return res.status(503).json({ error: 'Places not configured' })
+
+  try {
+    const url = `https://places.googleapis.com/v1/${ref}/media?key=${apiKey}&maxWidthPx=400&skipHttpRedirect=true`
+    const upstream = await fetch(url)
+    if (!upstream.ok) {
+      return res.status(upstream.status).send('Photo unavailable')
+    }
+    res.setHeader('Content-Type', upstream.headers.get('content-type') || 'image/jpeg')
+    res.setHeader('Cache-Control', 'public, max-age=86400')
+    const buffer = await upstream.arrayBuffer()
+    res.send(Buffer.from(buffer))
+  } catch (err) {
+    console.error('[photo]', err)
+    res.status(500).send('Photo fetch failed')
   }
 })
 

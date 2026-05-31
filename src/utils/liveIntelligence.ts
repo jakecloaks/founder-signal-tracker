@@ -1,5 +1,4 @@
 import type { FeedEvent, LocalBusiness } from '../types'
-import { generateMockBusinesses } from '../data/mock/businessGenerator'
 
 export function buildFeedFromBusinesses(businesses: LocalBusiness[]): FeedEvent[] {
   const events: FeedEvent[] = []
@@ -46,24 +45,4 @@ export function tickLiveIntelligence(businesses: LocalBusiness[]): LocalBusiness
       lastUpdated: new Date().toISOString(),
     }
   })
-}
-
-export function injectLiveOpportunity(
-  businesses: LocalBusiness[],
-  industry: string,
-  location: string,
-  serviceType: string
-): LocalBusiness | null {
-  if (Math.random() > 0.35 || businesses.length >= 16) return null
-
-  const fresh = generateMockBusinesses(industry, location, serviceType)
-  const candidate = fresh.find((f) => !businesses.some((b) => b.name === f.name))
-  if (!candidate) return null
-
-  return {
-    ...candidate,
-    id: `lb-live-${Date.now()}`,
-    opportunityScore: Math.min(98, candidate.opportunityScore + 4),
-    lastUpdated: new Date().toISOString(),
-  }
 }

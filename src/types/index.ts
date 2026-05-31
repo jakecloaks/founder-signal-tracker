@@ -147,6 +147,8 @@ export interface LocalBusiness {
   /** Derived website sub-scores */
   socialActivityScore: number
   leadOpportunityScore: number
+  /** Google Maps photo URL (proxied through backend) */
+  photoUrl?: string | null
   /** Website redesign-specific analysis */
   whyTheyNeedWebsite: string
   revenueImpact: string

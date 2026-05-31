@@ -15,31 +15,35 @@ function seeded(seed: number, n: number): number {
   return x - Math.floor(x)
 }
 
-/** Infer social/branding scores when Places API has no social fields */
-function inferSupplementalScores(place: PlaceRecord) {
+/**
+ * Infer social/branding scores — these aren't available from Places API.
+ * Deterministic per placeId so the same business always shows the same scores.
+ */
+function inferSocialScores(place: PlaceRecord) {
   const seed = hashFromString(place.placeId)
-  const websiteExists = Boolean(place.websiteUrl)
   const r = (n: number) => seeded(seed, n)
 
-  const websiteQualityScore = websiteExists
-    ? Math.floor(35 + r(1) * 45)
-    : 0
-
-  const instagramExists = websiteExists ? r(2) > 0.25 : r(3) > 0.55
-  const facebookExists = websiteExists ? r(4) > 0.2 : r(5) > 0.5
+  const instagramExists = place.websiteAnalysis.websiteExists ? r(2) > 0.28 : r(3) > 0.58
+  const facebookExists  = place.websiteAnalysis.websiteExists ? r(4) > 0.22 : r(5) > 0.52
 
   return {
-    websiteExists,
-    websiteQualityScore,
     instagramExists,
-    instagramActivityScore: instagramExists ? Math.floor(12 + r(6) * 70) : 0,
+    instagramActivityScore: instagramExists ? Math.floor(10 + r(6) * 72) : 0,
     facebookExists,
-    facebookActivityScore: facebookExists ? Math.floor(10 + r(7) * 65) : 0,
-    brandingScore: Math.floor(28 + r(8) * 55),
-    consistencyScore: websiteExists
-      ? Math.floor(30 + r(9) * 50)
-      : Math.floor(15 + r(10) * 35),
+    facebookActivityScore: facebookExists ? Math.floor(8 + r(7) * 68) : 0,
+    brandingScore: Math.floor(22 + r(8) * 58),
+    consistencyScore: place.websiteAnalysis.websiteExists
+      ? Math.floor(28 + r(9) * 52)
+      : Math.floor(12 + r(10) * 38),
   }
+}
+
+function mobileFriendlinessScore(qualityScore: number): number {
+  // viewport meta adds 12pts in scoring, so quality >= 58 likely has it
+  if (!qualityScore) return 0
+  return qualityScore >= 58
+    ? Math.round(qualityScore * 0.88)
+    : Math.round(qualityScore * 0.52)
 }
 
 export function enrichPlaceToLocalBusiness(
@@ -48,13 +52,18 @@ export function enrichPlaceToLocalBusiness(
   serviceType = ''
 ): LocalBusiness {
   const industry = normalizeIndustry(place.industry)
-  const supplemental = inferSupplementalScores(place)
-  const rating = place.rating || 0
+  const social    = inferSocialScores(place)
+  const rating     = place.rating || 0
   const reviewCount = place.reviewCount || 0
   const activeGrowth = reviewCount > 80 && rating >= 4.3
 
+  const { websiteExists, qualityScore } = place.websiteAnalysis
+
   const footprint = analyzeDigitalPresence({
-    ...supplemental,
+    websiteExists,
+    websiteQualityScore: qualityScore,
+    mobileFriendlinessScore: mobileFriendlinessScore(qualityScore),
+    ...social,
     googleRating: rating,
     reviewCount,
   })
@@ -66,6 +75,10 @@ export function enrichPlaceToLocalBusiness(
     .map((w) => w[0])
     .join('')
     .toUpperCase() || '??'
+
+  const photoUrl = place.photoName
+    ? `/api/places/photo?ref=${encodeURIComponent(place.photoName)}`
+    : null
 
   return buildLocalBusiness({
     id: `lb-${dataSource}-${place.placeId}`,
@@ -84,6 +97,7 @@ export function enrichPlaceToLocalBusiness(
     placeId: place.placeId,
     phone: place.phone,
     websiteUrl: place.websiteUrl,
+    photoUrl,
     serviceType,
   })
 }

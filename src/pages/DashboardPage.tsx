@@ -4,7 +4,7 @@ import { Building2, Flame, Target, DollarSign, TrendingUp } from 'lucide-react'
 import { DEFAULT_SEARCH, searchBusinesses } from '../services/business'
 import type { BusinessDataSource } from '../types'
 import { filterBusinesses } from '../utils/businessFilters'
-import { buildFeedFromBusinesses, tickLiveIntelligence, injectLiveOpportunity } from '../utils/liveIntelligence'
+import { buildFeedFromBusinesses, tickLiveIntelligence } from '../utils/liveIntelligence'
 import { Sidebar } from '../components/Sidebar'
 import { TopBar } from '../components/TopBar'
 import { LocalBusinessSearch } from '../components/LocalBusinessSearch'
@@ -53,17 +53,23 @@ export function DashboardPage() {
   const [flashIds, setFlashIds]       = useState<Set<string>>(new Set())
   const [initialized, setInitialized] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
 
   const credits        = useCredits()
   const savedLeadsHook = useSavedLeads()
 
   const runSearch = useCallback(async (ind: string, loc: string, svc: string) => {
     setScanning(true)
+    setSearchError(null)
     setIndustry(ind); setLocation(loc); setServiceType(svc)
     try {
       const result = await searchBusinesses(ind, loc, svc)
       setBusinesses(result.businesses)
       setDataSource(result.source)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Search failed. Please try again.'
+      setSearchError(msg)
+      setBusinesses([])
     } finally {
       setScanning(false)
     }
@@ -84,19 +90,10 @@ export function DashboardPage() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setBusinesses((prev) => {
-        let next = tickLiveIntelligence(prev)
-        const injected = injectLiveOpportunity(next, industry, location, serviceType)
-        if (injected) {
-          next = [injected, ...next]
-          setFlashIds((ids) => new Set(ids).add(injected.id))
-          setTimeout(() => setFlashIds((ids) => { const n = new Set(ids); n.delete(injected.id); return n }), 800)
-        }
-        return next
-      })
+      setBusinesses((prev) => tickLiveIntelligence(prev))
     }, 14000)
     return () => clearInterval(interval)
-  }, [industry, location, serviceType])
+  }, [])
 
   const filtered  = useMemo(() => filterBusinesses(businesses, filters, search), [businesses, filters, search])
   const feedEvents = useMemo(() => buildFeedFromBusinesses(businesses), [businesses])
@@ -224,6 +221,13 @@ export function DashboardPage() {
               {/* Results */}
               {scanning ? (
                 <div>{Array.from({ length: 6 }).map((_, i) => <BusinessCardSkeleton key={i} />)}</div>
+              ) : searchError ? (
+                <div className="flex flex-col items-center justify-center gap-4 px-8 py-20 text-center">
+                  <div className="rounded-xl border border-red-500/20 bg-red-500/8 px-6 py-5 max-w-md w-full">
+                    <p className="text-sm font-semibold text-red-400 mb-1">Search failed</p>
+                    <p className="text-xs text-[#82829A]">{searchError}</p>
+                  </div>
+                </div>
               ) : filtered.length === 0 ? (
                 <MrQuakEmpty
                   title="No businesses match your filters"

@@ -7,6 +7,7 @@ const FIELD_MASK = [
   'places.websiteUri',
   'places.nationalPhoneNumber',
   'places.googleMapsUri',
+  'places.photos',
 ].join(',')
 
 export function isGooglePlacesConfigured() {
@@ -35,14 +36,14 @@ export async function searchGooglePlaces(industry, location) {
     },
     body: JSON.stringify({
       textQuery,
-      maxResultCount: 15,
+      maxResultCount: 20,
       languageCode: 'en',
     }),
   })
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(`Google Places API ${res.status}: ${text.slice(0, 200)}`)
+    throw new Error(`Google Places API ${res.status}: ${text.slice(0, 300)}`)
   }
 
   const data = await res.json()
@@ -56,6 +57,8 @@ export async function searchGooglePlaces(industry, location) {
     reviewCount: place.userRatingCount ?? 0,
     websiteUrl: place.websiteUri ?? null,
     phone: place.nationalPhoneNumber ?? null,
+    googleMapsUrl: place.googleMapsUri ?? null,
+    photoName: place.photos?.[0]?.name ?? null,
     industry,
     location,
     distance: `${(0.5 + index * 0.35).toFixed(1)} mi`,
