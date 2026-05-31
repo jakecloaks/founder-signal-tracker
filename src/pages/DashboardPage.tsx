@@ -245,6 +245,7 @@ export function DashboardPage() {
                   {lockedResults.length > 0 && (
                     <UpgradeGate
                       lockedCount={lockedResults.length}
+                      location={location}
                       onUpgrade={() => setShowUpgradeModal(true)}
                       lockedPreviews={
                         <div>{lockedResults.slice(0, 3).map((b, i) => (
@@ -271,6 +272,7 @@ export function DashboardPage() {
                   {lockedResults.length > 0 && (
                     <UpgradeGate
                       lockedCount={lockedResults.length}
+                      location={location}
                       onUpgrade={() => setShowUpgradeModal(true)}
                       lockedPreviews={
                         <div className="grid gap-3 px-5 pb-2 sm:grid-cols-2">

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 
 const STORAGE_KEY = 'signalscope_credits'
-const INITIAL_CREDITS = 5
+const INITIAL_CREDITS = 1   // one free search for demo visitors
 
 export function useCredits() {
   const [credits, setCredits] = useState<number>(() => {
@@ -27,13 +27,8 @@ export function useCredits() {
     return true
   }
 
-  const addCredits = (amount: number) => {
-    setCredits((prev) => prev + amount)
-  }
-
-  const resetCredits = () => {
-    setCredits(INITIAL_CREDITS)
-  }
+  const addCredits = (amount: number) => setCredits((prev) => prev + amount)
+  const resetCredits = () => setCredits(INITIAL_CREDITS)
 
   return { credits, useCredit, addCredits, resetCredits, hasCredits: credits > 0 }
 }

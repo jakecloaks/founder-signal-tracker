@@ -3,6 +3,7 @@ import { LandingPage } from './pages/LandingPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { AuthPage } from './pages/AuthPage'
 import { SavedLeadsPage } from './pages/SavedLeadsPage'
+import { WaitlistPage } from './pages/WaitlistPage'
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/saved" element={<SavedLeadsPage />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/waitlist" element={<WaitlistPage />} />
       </Routes>
     </BrowserRouter>
   )
