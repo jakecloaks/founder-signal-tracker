@@ -2,47 +2,66 @@ import type { LocalBusiness } from '../../types'
 import { analyzeDigitalPresence } from '../../utils/digitalPresence'
 import { buildLocalBusiness } from '../../utils/opportunityEngine'
 
+/* ── Target industries only ─────────────────────────────────────────────── */
 export const INDUSTRY_ALIASES: Record<string, string> = {
+  // Dentist
   dentist: 'Dentist',
   dentists: 'Dentist',
   dental: 'Dentist',
-  gym: 'Gym',
-  gyms: 'Gym',
-  fitness: 'Gym',
-  salon: 'Salon',
-  salons: 'Salon',
-  hair: 'Salon',
+  'dental clinic': 'Dentist',
+  'dental office': 'Dentist',
+  // HVAC
+  hvac: 'HVAC',
+  'heating and cooling': 'HVAC',
+  'air conditioning': 'HVAC',
+  'hvac company': 'HVAC',
+  'hvac companies': 'HVAC',
+  // Roofing
   roofing: 'Roofing',
   roofer: 'Roofing',
+  roofers: 'Roofing',
+  'roofing company': 'Roofing',
+  'roofing companies': 'Roofing',
   roof: 'Roofing',
-  law: 'Law Firm',
-  lawyer: 'Law Firm',
-  attorneys: 'Law Firm',
-  'law firm': 'Law Firm',
-  'law firms': 'Law Firm',
-  'real estate': 'Real Estate',
-  realtor: 'Real Estate',
-  realtors: 'Real Estate',
-  agency: 'Real Estate',
-  agencies: 'Real Estate',
-  restaurant: 'Restaurant',
-  restaurants: 'Restaurant',
+  // Plumber
   plumber: 'Plumber',
+  plumbers: 'Plumber',
   plumbing: 'Plumber',
+  'plumbing company': 'Plumber',
+  // Chiropractor
   chiropractor: 'Chiropractor',
+  chiropractors: 'Chiropractor',
   chiropractic: 'Chiropractor',
+  chiro: 'Chiropractor',
+  // Landscaping
+  landscaping: 'Landscaping',
+  landscaper: 'Landscaping',
+  landscapers: 'Landscaping',
+  lawn: 'Landscaping',
+  'lawn care': 'Landscaping',
+  // Pest Control
+  'pest control': 'Pest Control',
+  exterminator: 'Pest Control',
+  exterminators: 'Pest Control',
+  pest: 'Pest Control',
+  // Med Spa
+  'med spa': 'Med Spa',
+  'med spas': 'Med Spa',
+  medspa: 'Med Spa',
+  medspas: 'Med Spa',
+  'medical spa': 'Med Spa',
+  aesthetics: 'Med Spa',
 }
 
 const NAME_PREFIXES: Record<string, string[]> = {
-  Dentist: ['Bright Smile', 'Peak Dental', 'Utah Family', 'Parkview', 'Summit Oral', 'Canyon Creek', 'Wasatch'],
-  Gym: ['Iron Forge', 'Peak Performance', 'Metro Fitness', 'Elite Training', 'Pulse Athletic', 'Core Strength'],
-  Salon: ['Luxe Studio', 'Bloom & Co', 'Velvet Chair', 'Radiance', 'The Color Bar', 'Studio Nine'],
-  Roofing: ['Summit Roof', 'Texas Top', 'Guardian Roofing', 'All-Weather', 'Lone Star Roof', 'Premier Shield'],
-  'Law Firm': ['Hartley & Partners', 'Mitchell Legal', 'Cornerstone Law', 'Ridgeline Attorneys', 'Sterling Legal'],
-  'Real Estate': ['Horizon Realty', 'Metro Homes', 'KeyStone Properties', 'Urban Nest', 'Premier Listings'],
-  Restaurant: ['Fire & Vine', 'The Local Table', 'Harbor Kitchen', 'Copper Spoon'],
-  Plumber: ['FlowRight', 'Clear Pipe', 'Apex Plumbing', 'Quick Fix Plumbing'],
-  Chiropractor: ['Align Wellness', 'Spine & Sport', 'Balance Chiropractic', 'Restore Health'],
+  Dentist: ['Bright Smile', 'Peak Dental', 'Family Dental', 'Parkview', 'Summit Oral', 'Canyon Creek', 'Wasatch', 'Clear Creek', 'Sunrise Dental', 'Greenfield'],
+  HVAC: ['AirPro', 'ComfortPlus', 'BlueSky', 'Arctic Air', 'Summit HVAC', 'AllSeason', 'ProClimate', 'TrueComfort', 'ClimateCare', 'AirMasters'],
+  Roofing: ['Summit Roofing', 'Apex Roof', 'Guardian Roofing', 'All-Weather', 'Premier Shield', 'Ironclad Roof', 'Pinnacle', 'StormGuard', 'RoofRight', 'TrueLine'],
+  Plumber: ['FlowRight', 'Clear Pipe', 'Apex Plumbing', 'QuickFix', 'ProFlow', 'Reliable Plumbing', 'AllPro', 'PipePros', 'AquaRight', 'RapidFlow'],
+  Chiropractor: ['Align Wellness', 'Spine & Sport', 'Balance Chiro', 'Restore Health', 'Peak Chiropractic', 'CenterLine', 'InMotion', 'CoreAlign', 'LifeBalance', 'SpineCare'],
+  Landscaping: ['GreenScape', 'Lawn Masters', 'ProGreen', 'TruGrow', 'Horizon Landscaping', 'EverGreen', 'LandCraft', 'GardenPro', 'NatureCraft', 'OutdoorEdge'],
+  'Pest Control': ['ShieldPest', 'BugBusters', 'ProShield', 'Guardian Pest', 'EcoShield', 'AllClear', 'NoMorePests', 'SafeHome Pest', 'PestAway', 'DefenderPest'],
+  'Med Spa': ['Glow Studio', 'Luminary Spa', 'Revive Aesthetics', 'Radiance MedSpa', 'Pure Skin', 'Elevate Aesthetics', 'Luxe Skin', 'Bloom MedSpa', 'Clarity Skin', 'Refine Studio'],
 }
 
 const STREET_TYPES = ['St', 'Ave', 'Blvd', 'Dr', 'Way', 'Rd']
@@ -76,30 +95,38 @@ function generateOneBusiness(
   seed: number,
   index: number
 ): LocalBusiness {
-  const prefixes = NAME_PREFIXES[industry] ?? ['Local', 'Premier', 'Main Street']
+  const prefixes = NAME_PREFIXES[industry] ?? ['Local', 'Premier', 'Main Street', 'ProService']
   const prefix = prefixes[Math.floor(seededRandom(seed, index) * prefixes.length)]
-  const suffixes = ['LLC', 'Group', 'Co.', 'Studio', 'Center', 'Clinic', '']
+  const suffixes = ['LLC', 'Group', 'Co.', 'Inc.', '& Associates', '']
   const suffix = suffixes[Math.floor(seededRandom(seed, index + 7) * suffixes.length)]
   const name = `${prefix} ${suffix}`.replace(/\s+/g, ' ').trim()
 
   const r = (offset: number) => seededRandom(seed, index + offset)
 
-  const websiteExists = r(1) > 0.22
-  const instagramExists = r(2) > 0.18
-  const facebookExists = r(3) > 0.12
-  const googleRating = Math.round((3.2 + r(4) * 1.6) * 10) / 10
-  const reviewCount = Math.floor(8 + r(5) * 340)
+  // Website presence — higher chance of no/bad website to reflect real market
+  const websiteExists = r(1) > 0.28
+  const websiteQualityScore = websiteExists ? Math.floor(15 + r(10) * 70) : 0
+  // Mobile friendliness correlates with website quality but has variance
+  const mobileFriendlinessScore = websiteExists
+    ? Math.max(5, Math.min(95, Math.floor(websiteQualityScore * 0.7 + r(22) * 35 - 10)))
+    : 0
+
+  const instagramExists = r(2) > 0.25
+  const facebookExists = r(3) > 0.15
+  const googleRating = Math.round((3.5 + r(4) * 1.4) * 10) / 10
+  const reviewCount = Math.floor(10 + r(5) * 380)
   const activeGrowth = r(6) > 0.55 && reviewCount > 60
 
   const footprint = analyzeDigitalPresence({
     websiteExists,
-    websiteQualityScore: websiteExists ? Math.floor(20 + r(10) * 75) : 0,
+    websiteQualityScore,
+    mobileFriendlinessScore,
     instagramExists,
-    instagramActivityScore: instagramExists ? Math.floor(10 + r(11) * 85) : 0,
+    instagramActivityScore: instagramExists ? Math.floor(10 + r(11) * 82) : 0,
     facebookExists,
-    facebookActivityScore: facebookExists ? Math.floor(8 + r(12) * 80) : 0,
-    brandingScore: Math.floor(25 + r(13) * 70),
-    consistencyScore: Math.floor(20 + r(14) * 75),
+    facebookActivityScore: facebookExists ? Math.floor(8 + r(12) * 78) : 0,
+    brandingScore: Math.floor(18 + r(13) * 72),
+    consistencyScore: Math.floor(15 + r(14) * 75),
     googleRating,
     reviewCount,
   })
@@ -129,9 +156,9 @@ function generateOneBusiness(
     lastUpdated: new Date().toISOString(),
     activeGrowth,
     dataSource: 'mock',
-    serviceType: serviceType || 'marketing',
+    serviceType: serviceType || 'website redesign',
     phone: `(${Math.floor(200 + r(19) * 799)}) ${Math.floor(100 + r(20) * 899)}-${Math.floor(1000 + r(21) * 8999)}`,
-    websiteUrl: websiteExists ? `https://www.${name.toLowerCase().replace(/\s+/g, '')}.com` : null,
+    websiteUrl: websiteExists ? `https://www.${name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com` : null,
   })
 }
 
@@ -148,6 +175,6 @@ export function generateMockBusinesses(industry: string, location: string, servi
   const { industry: ind, location: loc, seed } = parseSearchQuery(industry, location)
   const count = 10 + (seed % 4)
   return Array.from({ length: count }, (_, i) => generateOneBusiness(ind, loc, serviceType, seed, i)).sort(
-    (a, b) => b.fitScore - a.fitScore
+    (a, b) => b.websiteOpportunityScore - a.websiteOpportunityScore
   )
 }

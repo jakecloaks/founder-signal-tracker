@@ -1,15 +1,14 @@
 import {
-  X, Target, Globe, Instagram, Facebook,
+  X, Globe, Instagram, Facebook,
   AlertTriangle, Phone, ExternalLink, MessageCircle,
-  CheckCircle2, Sparkles, BarChart3,
+  CheckCircle2, BarChart3, Minus, AlertCircle,
+  DollarSign, Target, Zap, TrendingUp,
 } from 'lucide-react'
-import type { LocalBusiness, ContactMethod, ContactChannelVisibility } from '../types'
+import type { LocalBusiness, ContactMethod, ContactChannelVisibility, DifficultyToClose } from '../types'
 import { relativeTime } from '../utils/signalEngine'
-import { OpportunityBadge } from './OpportunityBadge'
 import { PresenceChips } from './PresenceChips'
 import { StarRating } from './StarRating'
 import { SignalStrengthBar } from './SignalStrengthBar'
-import { OpportunityScoreRing } from './OpportunityScoreRing'
 import { DataSourceBadge } from './DataSourceBadge'
 import { SaveButton } from './SaveButton'
 import type { useSavedLeads } from '../hooks/useSavedLeads'
@@ -68,11 +67,64 @@ function contactChannelRows(visibility: ContactChannelVisibility, best: ContactM
   return rows.sort((a, b) => (a.key === best ? -1 : b.key === best ? 1 : b.value - a.value))
 }
 
-function SectionLabel({ icon: Icon, label }: { icon: typeof Sparkles; label: string }) {
+function SectionLabel({ icon: Icon, label }: { icon: typeof Zap; label: string }) {
   return (
     <h3 className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#555]">
       <Icon className="h-3.5 w-3.5" />{label}
     </h3>
+  )
+}
+
+function ScoreCell({ label, value }: { label: string; value: number }) {
+  const color =
+    value === 0 ? 'text-red-400' :
+    value < 35  ? 'text-red-400' :
+    value < 55  ? 'text-amber-400' :
+    value < 75  ? 'text-[#4A90E2]' :
+    'text-emerald-400'
+
+  const bar =
+    value === 0 ? 'bg-red-500' :
+    value < 35  ? 'bg-red-500' :
+    value < 55  ? 'bg-amber-500' :
+    value < 75  ? 'bg-[#4A90E2]' :
+    'bg-emerald-500'
+
+  return (
+    <div className="flex flex-col items-center gap-2 rounded-xl border border-[#2A2A2A] bg-[#1A1A1A] p-3">
+      <span className={`text-2xl font-bold tabular-nums ${color}`}>{value}</span>
+      <div className="h-1 w-full overflow-hidden rounded-full bg-[#2A2A2A]">
+        <div className={`h-full bar-fill rounded-full ${bar}`} style={{ width: `${Math.max(value, 2)}%` }} />
+      </div>
+      <span className="text-[10px] font-semibold text-[#555]">{label}</span>
+    </div>
+  )
+}
+
+function DifficultyBadge({ level }: { level: DifficultyToClose }) {
+  const styles = {
+    easy:   'bg-emerald-500/10 text-emerald-400 border-emerald-500/25',
+    medium: 'bg-amber-500/10   text-amber-400   border-amber-500/25',
+    hard:   'bg-red-500/10     text-red-400     border-red-500/25',
+  }
+  const icons = {
+    easy:   <CheckCircle2 className="h-3.5 w-3.5" />,
+    medium: <Minus className="h-3.5 w-3.5" />,
+    hard:   <AlertCircle className="h-3.5 w-3.5" />,
+  }
+  const desc = {
+    easy:   'No website or very poor quality — the pitch is obvious. Lead with "you need a website" and show them what they\'re missing.',
+    medium: 'Has a website but it\'s underperforming. Lead with conversion gaps, mobile issues, or specific SEO opportunities.',
+    hard:   'Has a decent website. Needs a strong specific angle — focus on a measurable improvement, not just aesthetics.',
+  }
+  return (
+    <div className={`rounded-lg border p-3 ${styles[level]}`}>
+      <div className="flex items-center gap-2">
+        {icons[level]}
+        <span className="font-semibold capitalize">{level} to close</span>
+      </div>
+      <p className="mt-1.5 text-xs opacity-80">{desc[level]}</p>
+    </div>
   )
 }
 
@@ -96,7 +148,7 @@ export function BusinessDetailModal({ business, onClose, savedLeadsHook }: Busin
         {/* Header */}
         <div className="sticky top-0 z-10 border-b border-[#1E1E1E] bg-[#111]/95 backdrop-blur-sm px-5 py-4">
           <div className="flex items-start gap-4 pr-10">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#2A2A2A] bg-[#1A1A1A] text-base font-bold text-[#888]">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#2A2A2A] bg-[#1A1A1A] text-base font-bold text-[#888]">
               {business.logo}
             </div>
             <div className="flex-1 min-w-0">
@@ -104,12 +156,20 @@ export function BusinessDetailModal({ business, onClose, savedLeadsHook }: Busin
               <p className="text-sm text-[#888]">{business.industry} · {business.location}</p>
               <p className="mt-0.5 text-xs text-[#555]">{business.address}</p>
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                {business.categories.map((c) => <OpportunityBadge key={c} category={c} />)}
                 <DataSourceBadge source={business.dataSource} />
                 <span className="text-[11px] text-[#555]">Updated {relativeTime(business.lastUpdated)}</span>
               </div>
             </div>
-            <OpportunityScoreRing score={business.fitScore} size="lg" pulse={business.fitScore >= 80} />
+            {/* WOS badge */}
+            <div className={`flex flex-col items-center justify-center rounded-xl border px-4 py-2.5 ${
+              business.websiteOpportunityScore >= 80 ? 'bg-orange-500/15 text-orange-400 border-orange-500/30 score-hot-glow' :
+              business.websiteOpportunityScore >= 65 ? 'bg-[#4A90E2]/15 text-[#4A90E2] border-[#4A90E2]/30 accent-glow' :
+              business.websiteOpportunityScore >= 45 ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' :
+              'bg-white/5 text-[#888] border-[#333]'
+            }`}>
+              <span className="text-2xl font-bold tabular-nums">{business.websiteOpportunityScore}</span>
+              <span className="text-[8px] font-bold uppercase tracking-widest opacity-60">WOS</span>
+            </div>
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -125,10 +185,12 @@ export function BusinessDetailModal({ business, onClose, savedLeadsHook }: Busin
                 className="flex items-center gap-1 text-xs text-[#4A90E2] hover:text-[#6aaff0]"
                 onClick={(e) => e.stopPropagation()}>
                 <ExternalLink className="h-3 w-3" />
-                {business.websiteUrl.replace(/^https?:\/\//, '')}
+                {business.websiteUrl.replace(/^https?:\/\//, '').split('/')[0]}
               </a>
             ) : (
-              <span className="text-xs text-amber-400">No website</span>
+              <span className="flex items-center gap-1 text-xs font-semibold text-red-400">
+                <Globe className="h-3 w-3" />No website
+              </span>
             )}
           </div>
 
@@ -145,16 +207,70 @@ export function BusinessDetailModal({ business, onClose, savedLeadsHook }: Busin
         </button>
 
         <div className="divide-y divide-[#1E1E1E]">
+
+          {/* ── 5 Website Scores ─────────────────────────────────── */}
           <section className="px-5 py-4">
-            <SectionLabel icon={Sparkles} label={business.serviceType ? `Fit analysis — ${business.serviceType}` : 'Fit analysis'} />
-            <p className="text-sm leading-relaxed text-[#FAFAF9]">{business.fitExplanation}</p>
-            <p className="mt-2 text-xs text-[#555]">
-              Maturity: <span className="capitalize text-[#888]">{business.businessMaturity}</span>
+            <SectionLabel icon={BarChart3} label="Website Opportunity Scores" />
+            <div className="grid grid-cols-5 gap-2">
+              <ScoreCell label="Website"  value={fp.websiteQualityScore} />
+              <ScoreCell label="Mobile"   value={fp.mobileFriendlinessScore} />
+              <ScoreCell label="Branding" value={fp.brandingScore} />
+              <ScoreCell label="Social"   value={business.socialActivityScore} />
+              <ScoreCell label="Lead opp" value={business.websiteOpportunityScore} />
+            </div>
+          </section>
+
+          {/* ── Why they need a website ──────────────────────────── */}
+          <section className="px-5 py-4">
+            <SectionLabel icon={Globe} label="Why they need a new website" />
+            <p className="text-sm leading-relaxed text-[#FAFAF9]">{business.whyTheyNeedWebsite}</p>
+            <div className="mt-3">
+              <DifficultyBadge level={business.difficultyToClose} />
+            </div>
+          </section>
+
+          {/* ── Revenue impact ───────────────────────────────────── */}
+          <section className="px-5 py-4">
+            <SectionLabel icon={DollarSign} label="Potential revenue impact" />
+            <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/8 p-4">
+              <TrendingUp className="h-5 w-5 shrink-0 text-emerald-400" />
+              <div>
+                <p className="text-lg font-bold text-emerald-400">{business.revenueImpact}</p>
+                <p className="mt-0.5 text-xs text-emerald-400/70">Estimated project value for your pipeline</p>
+              </div>
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-[#888]">
+              Based on industry averages for {business.industry.toLowerCase()} website projects. Actual project value depends on scope, custom features, and ongoing retainer structure.
             </p>
           </section>
 
+          {/* ── Pitch angle ──────────────────────────────────────── */}
           <section className="px-5 py-4">
-            <SectionLabel icon={MessageCircle} label="Recommended contact" />
+            <SectionLabel icon={Target} label="Suggested website pitch angle" />
+            <div className="rounded-xl border border-[#4A90E2]/20 bg-[#4A90E2]/5 p-4">
+              <p className="text-sm leading-relaxed text-[#FAFAF9]">{business.fitExplanation}</p>
+            </div>
+            <div className="mt-3 border-l-2 border-[#4A90E2]/40 pl-3">
+              <p className="text-xs font-semibold text-[#888]">Outreach opener:</p>
+              <p className="mt-1 text-xs leading-relaxed text-[#888] italic">"{business.outreachOpener}"</p>
+            </div>
+          </section>
+
+          {/* ── Weaknesses ───────────────────────────────────────── */}
+          <section className="px-5 py-4">
+            <SectionLabel icon={AlertTriangle} label="Detected weaknesses" />
+            <ul className="space-y-1.5">
+              {business.weaknesses.map((w) => (
+                <li key={w} className="rounded-lg border border-amber-500/20 bg-amber-500/8 px-3 py-2 text-xs text-[#FAFAF9]">
+                  {w}
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* ── Contact recommendation ───────────────────────────── */}
+          <section className="px-5 py-4">
+            <SectionLabel icon={MessageCircle} label="Best way to reach them" />
             <div className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-semibold ${CONTACT_STYLES[business.bestContactMethod]}`}>
               <CheckCircle2 className="h-3.5 w-3.5" />
               {CONTACT_LABELS[business.bestContactMethod]}
@@ -167,30 +283,20 @@ export function BusinessDetailModal({ business, onClose, savedLeadsHook }: Busin
             </div>
           </section>
 
+          {/* ── Digital footprint detail ─────────────────────────── */}
           <section className="px-5 py-4">
-            <SectionLabel icon={AlertTriangle} label="Detected weaknesses" />
-            <ul className="space-y-1.5">
-              {business.weaknesses.map((w) => (
-                <li key={w} className="rounded-lg border border-amber-500/20 bg-amber-500/8 px-3 py-2 text-xs text-[#FAFAF9]">
-                  {w}
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section className="px-5 py-4">
-            <SectionLabel icon={BarChart3} label="Digital footprint" />
+            <SectionLabel icon={BarChart3} label="Full digital footprint" />
             <div className="grid gap-3 sm:grid-cols-2">
-              <SignalStrengthBar value={business.fitScore} label="Service fit" />
-              <SignalStrengthBar value={fp.digitalPresenceStrength} label="Digital presence" />
+              <SignalStrengthBar value={fp.digitalPresenceStrength} label="Overall presence" />
               <SignalStrengthBar value={fp.marketingMaturity} label="Marketing maturity" />
               <SignalStrengthBar value={fp.growthIntent} label="Growth intent" />
+              <SignalStrengthBar value={fp.consistencyScore} label="Brand consistency" />
             </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-3">
               {[
-                { icon: Globe, label: 'Website', value: fp.websiteExists ? `${fp.websiteQualityScore}` : '—' },
-                { icon: Instagram, label: 'Instagram', value: fp.instagramExists ? `${fp.instagramActivityScore}` : '—' },
-                { icon: Facebook, label: 'Facebook', value: fp.facebookExists ? `${fp.facebookActivityScore}` : '—' },
+                { icon: Globe,     label: 'Website',   value: fp.websiteExists ? `${fp.websiteQualityScore}/100` : 'None' },
+                { icon: Instagram, label: 'Instagram', value: fp.instagramExists ? `${fp.instagramActivityScore}/100` : 'None' },
+                { icon: Facebook,  label: 'Facebook',  value: fp.facebookExists ? `${fp.facebookActivityScore}/100` : 'None' },
               ].map((item) => (
                 <div key={item.label} className="rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] p-3 text-center">
                   <item.icon className="mx-auto h-3.5 w-3.5 text-[#555]" />
@@ -201,13 +307,13 @@ export function BusinessDetailModal({ business, onClose, savedLeadsHook }: Busin
             </div>
           </section>
 
-          <section className="px-5 py-4">
-            <SectionLabel icon={Target} label="Outreach intelligence" />
+          {/* ── Outreach recommendation ──────────────────────────── */}
+          <section className="px-5 py-5">
+            <SectionLabel icon={Zap} label="Outreach playbook" />
             <div className="space-y-4">
               {[
-                { label: 'Opener', value: business.outreachOpener, style: 'text-[#FAFAF9]' },
-                { label: 'Pain point', value: business.painPoint, style: 'text-[#888]' },
-                { label: 'Service fit', value: business.serviceSuggestion, style: 'font-semibold text-orange-400' },
+                { label: 'Pain point to lead with', value: business.painPoint, style: 'text-[#FAFAF9]' },
+                { label: 'Service to pitch', value: business.serviceSuggestion, style: 'font-semibold text-[#4A90E2]' },
               ].map((item) => (
                 <div key={item.label}>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#555]">{item.label}</p>
@@ -216,15 +322,9 @@ export function BusinessDetailModal({ business, onClose, savedLeadsHook }: Busin
               ))}
               <p className="text-xs leading-relaxed text-[#888]">{business.outreachRecommendation}</p>
             </div>
+            <p className="mt-4 text-xs leading-relaxed text-[#888]">{business.suggestedServicePitch}</p>
           </section>
 
-          <section className="px-5 py-5">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#555] mb-2">Suggested pitch</p>
-            <p className="text-sm leading-relaxed text-[#888]">{business.suggestedServicePitch}</p>
-            <p className="mt-3 border-l-2 border-[#4A90E2]/40 pl-3 text-sm font-medium italic text-[#888]">
-              "{business.outreachAngle}"
-            </p>
-          </section>
         </div>
       </div>
     </div>

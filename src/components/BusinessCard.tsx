@@ -1,9 +1,7 @@
-import { ArrowRight, Phone, MessageCircle, MapPin } from 'lucide-react'
-import type { LocalBusiness, ContactMethod } from '../types'
-import { OpportunityBadge } from './OpportunityBadge'
+import { ArrowRight, Phone, Globe, AlertCircle, CheckCircle2, Minus } from 'lucide-react'
+import type { LocalBusiness, DifficultyToClose } from '../types'
 import { PresenceChips } from './PresenceChips'
 import { StarRating } from './StarRating'
-import { OpportunityScoreRing } from './OpportunityScoreRing'
 import { DataSourceBadge } from './DataSourceBadge'
 import { SaveButton } from './SaveButton'
 import type { useSavedLeads } from '../hooks/useSavedLeads'
@@ -17,36 +15,105 @@ interface BusinessCardProps {
   savedLeadsHook?: ReturnType<typeof useSavedLeads>
 }
 
-const CONTACT_LABELS: Record<ContactMethod, string> = {
-  instagram: 'DM on IG',
-  phone: 'Call',
-  website_form: 'Web form',
-  email: 'Email',
-  facebook: 'FB msg',
+/* ── Score mini-bar ──────────────────────────────────────────────────── */
+function ScorePip({ value, label }: { value: number; label: string }) {
+  const color =
+    value === 0 ? 'text-red-400' :
+    value < 35  ? 'text-red-400' :
+    value < 55  ? 'text-amber-400' :
+    value < 75  ? 'text-[#4A90E2]' :
+    'text-emerald-400'
+
+  const bar =
+    value === 0 ? 'bg-red-500' :
+    value < 35  ? 'bg-red-500' :
+    value < 55  ? 'bg-amber-500' :
+    value < 75  ? 'bg-[#4A90E2]' :
+    'bg-emerald-500'
+
+  return (
+    <div className="flex flex-col items-center gap-1" title={`${label}: ${value}/100`}>
+      <div className="h-8 w-1.5 overflow-hidden rounded-full bg-[#2A2A2A] flex flex-col justify-end">
+        <div
+          className={`w-full rounded-full transition-all ${bar}`}
+          style={{ height: `${Math.max(value, 3)}%` }}
+        />
+      </div>
+      <span className={`text-[9px] font-bold tabular-nums leading-none ${color}`}>
+        {value}
+      </span>
+      <span className="text-[8px] text-[#555] leading-none text-center" style={{ fontSize: '7.5px' }}>
+        {label}
+      </span>
+    </div>
+  )
 }
 
-const CONTACT_STYLES: Record<ContactMethod, string> = {
-  instagram: 'text-pink-400 border-pink-500/25 bg-pink-500/10',
-  phone:     'text-emerald-400 border-emerald-500/25 bg-emerald-500/10',
-  website_form: 'text-[#4A90E2] border-[#4A90E2]/25 bg-[#4A90E2]/10',
-  email:     'text-[#4A90E2] border-[#4A90E2]/25 bg-[#4A90E2]/10',
-  facebook:  'text-blue-400 border-blue-500/25 bg-blue-500/10',
+/* ── 5-score mini panel ──────────────────────────────────────────────── */
+function ScorePanel({ business }: { business: LocalBusiness }) {
+  const scores = [
+    { label: 'Website', value: business.footprint.websiteQualityScore },
+    { label: 'Mobile',  value: business.footprint.mobileFriendlinessScore },
+    { label: 'Brand',   value: business.footprint.brandingScore },
+    { label: 'Social',  value: business.socialActivityScore },
+    { label: 'Lead',    value: business.websiteOpportunityScore },
+  ]
+  return (
+    <div className="flex items-end gap-2 rounded-lg border border-[#2A2A2A] bg-[#111] px-3 py-2">
+      {scores.map((s) => (
+        <ScorePip key={s.label} value={s.value} label={s.label} />
+      ))}
+    </div>
+  )
 }
 
-function getFitBarClass(score: number) {
-  if (score >= 80) return 'fit-bar-hot'
-  if (score >= 65) return 'fit-bar-strong'
-  if (score >= 45) return 'fit-bar-mid'
-  return 'fit-bar-low'
+/* ── Difficulty badge ────────────────────────────────────────────────── */
+function DifficultyBadge({ level }: { level: DifficultyToClose }) {
+  const styles = {
+    easy:   'bg-emerald-500/10 text-emerald-400 border-emerald-500/25',
+    medium: 'bg-amber-500/10   text-amber-400   border-amber-500/25',
+    hard:   'bg-red-500/10     text-red-400     border-red-500/25',
+  }
+  const icons = {
+    easy:   <CheckCircle2 className="h-2.5 w-2.5" />,
+    medium: <Minus className="h-2.5 w-2.5" />,
+    hard:   <AlertCircle className="h-2.5 w-2.5" />,
+  }
+  const labels = { easy: 'Easy close', medium: 'Med', hard: 'Hard close' }
+
+  return (
+    <span className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-semibold ${styles[level]}`}>
+      {icons[level]}{labels[level]}
+    </span>
+  )
 }
 
-function getAvatarClass(score: number) {
-  if (score >= 80) return 'bg-orange-500/15 text-orange-400 border-orange-500/25'
-  if (score >= 65) return 'bg-[#4A90E2]/15 text-[#4A90E2] border-[#4A90E2]/25'
-  if (score >= 45) return 'bg-amber-500/15 text-amber-400 border-amber-500/25'
-  return 'bg-white/5 text-[#888] border-[#2A2A2A]'
+/* ── Website opportunity score ring ──────────────────────────────────── */
+function WOSBadge({ score }: { score: number }) {
+  const style =
+    score >= 80 ? 'bg-orange-500/15 text-orange-400 border-orange-500/30' :
+    score >= 65 ? 'bg-[#4A90E2]/15 text-[#4A90E2] border-[#4A90E2]/30' :
+    score >= 45 ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' :
+    'bg-white/5 text-[#888] border-[#333]'
+
+  return (
+    <div className={`flex flex-col items-center justify-center rounded-lg border px-2.5 py-1.5 ${style} ${score >= 80 ? 'score-hot-glow' : ''}`}>
+      <span className="text-lg font-bold tabular-nums leading-none">{score}</span>
+      <span className="mt-0.5 text-[8px] font-bold uppercase tracking-wider opacity-60">WOS</span>
+    </div>
+  )
 }
 
+/* ── Revenue tag ─────────────────────────────────────────────────────── */
+function RevenueTag({ impact }: { impact: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded border border-emerald-500/20 bg-emerald-500/8 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-400">
+      {impact}
+    </span>
+  )
+}
+
+/* ── List card ───────────────────────────────────────────────────────── */
 export function BusinessCard({
   business,
   onClick,
@@ -56,93 +123,101 @@ export function BusinessCard({
   savedLeadsHook,
 }: BusinessCardProps) {
   const stagger = `stagger-${Math.min(4, (index % 4) + 1)}`
-  const hot = business.fitScore >= 80
+  const hot = business.websiteOpportunityScore >= 80
+  const noSite = !business.footprint.websiteExists
 
   if (listStyle) {
     return (
       <div
-        className={`fade-in ${stagger} group relative cursor-pointer ${
-          liveFlash ? 'live-flash' : ''
-        } ${hot ? 'border-l-2 border-l-orange-500' : 'border-l-2 border-l-transparent'}`}
+        className={`fade-in ${stagger} group relative cursor-pointer ${liveFlash ? 'live-flash' : ''} ${
+          hot ? 'border-l-2 border-l-orange-500' : noSite ? 'border-l-2 border-l-red-500/50' : 'border-l-2 border-l-transparent'
+        }`}
         onClick={onClick}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && onClick()}
       >
         <div className="flex items-start gap-3 border-b border-[#1E1E1E] px-4 py-4 transition-colors hover:bg-[#141414] sm:px-5">
-          <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-xs font-bold ${getAvatarClass(business.fitScore)}`}>
+          {/* Avatar */}
+          <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-xs font-bold ${
+            hot ? 'bg-orange-500/15 text-orange-400 border-orange-500/25' :
+            business.websiteOpportunityScore >= 65 ? 'bg-[#4A90E2]/15 text-[#4A90E2] border-[#4A90E2]/25' :
+            'bg-white/5 text-[#888] border-[#2A2A2A]'
+          }`}>
             {business.logo}
           </div>
 
           <div className="min-w-0 flex-1">
+            {/* Name + score */}
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <span className="font-semibold text-[#FAFAF9]">{business.name}</span>
                 <span className="ml-2 text-xs text-[#555]">{business.industry}</span>
               </div>
-              <div className="flex shrink-0 items-center gap-1.5">
-                {savedLeadsHook && (
-                  <SaveButton business={business} savedLeadsHook={savedLeadsHook} />
-                )}
-                <OpportunityScoreRing score={business.fitScore} pulse={hot} />
+              <div className="flex shrink-0 items-start gap-1.5">
+                {savedLeadsHook && <SaveButton business={business} savedLeadsHook={savedLeadsHook} />}
+                <WOSBadge score={business.websiteOpportunityScore} />
               </div>
             </div>
 
+            {/* Meta row */}
             <div className="mt-1.5 flex flex-wrap items-center gap-2">
               <StarRating rating={business.googleRating} reviewCount={business.reviewCount} />
-              {business.distance && (
-                <span className="flex items-center gap-0.5 text-[11px] text-[#555]">
-                  <MapPin className="h-2.5 w-2.5" />{business.distance}
-                </span>
-              )}
               {business.phone && (
                 <span className="flex items-center gap-0.5 text-[11px] text-[#555]">
                   <Phone className="h-2.5 w-2.5" />{business.phone}
+                </span>
+              )}
+              {business.footprint.websiteExists ? (
+                <span className="flex items-center gap-0.5 text-[11px] text-emerald-500">
+                  <Globe className="h-2.5 w-2.5" />has site
+                </span>
+              ) : (
+                <span className="flex items-center gap-0.5 text-[11px] font-semibold text-red-400">
+                  <Globe className="h-2.5 w-2.5" />no website
                 </span>
               )}
               <PresenceChips footprint={business.footprint} />
               <DataSourceBadge source={business.dataSource} />
             </div>
 
+            {/* Why they need a site */}
             <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-[#888]">
-              {business.fitExplanation}
+              {business.whyTheyNeedWebsite}
             </p>
 
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              {business.categories.slice(0, 2).map((c) => (
-                <OpportunityBadge key={c} category={c} />
-              ))}
-              <span className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-medium ${CONTACT_STYLES[business.bestContactMethod]}`}>
-                <MessageCircle className="h-2.5 w-2.5" />
-                {CONTACT_LABELS[business.bestContactMethod]}
-              </span>
+            {/* 5-score panel + tags */}
+            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              <ScorePanel business={business} />
+              <div className="flex flex-wrap gap-1.5">
+                <DifficultyBadge level={business.difficultyToClose} />
+                <RevenueTag impact={business.revenueImpact} />
+              </div>
             </div>
           </div>
 
           <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-[#2A2A2A] opacity-0 transition-all group-hover:opacity-100 group-hover:text-[#555]" />
         </div>
-
-        <div className="absolute bottom-0 left-0 h-px w-full">
-          <div
-            className={`h-full bar-fill ${getFitBarClass(business.fitScore)}`}
-            style={{ width: `${business.fitScore}%`, opacity: 0.3 }}
-          />
-        </div>
       </div>
     )
   }
 
+  /* Grid card */
   return (
     <button
       type="button"
       onClick={onClick}
       className={`fade-in ${stagger} group w-full rounded-xl border border-[#2A2A2A] bg-[#1A1A1A] p-4 text-left card-lift ${
         liveFlash ? 'live-flash' : ''
-      } ${hot ? 'border-l-2 border-l-orange-500' : ''}`}
+      } ${hot ? 'border-l-2 border-l-orange-500' : noSite ? 'border-l-2 border-l-red-500/50' : ''}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-xs font-bold ${getAvatarClass(business.fitScore)}`}>
+          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-xs font-bold ${
+            hot ? 'bg-orange-500/15 text-orange-400 border-orange-500/25' :
+            business.websiteOpportunityScore >= 65 ? 'bg-[#4A90E2]/15 text-[#4A90E2] border-[#4A90E2]/25' :
+            'bg-white/5 text-[#888] border-[#2A2A2A]'
+          }`}>
             {business.logo}
           </div>
           <div>
@@ -152,45 +227,39 @@ export function BusinessCard({
         </div>
         <div className="flex items-start gap-1.5 shrink-0">
           {savedLeadsHook && (
-            <SaveButton business={business} savedLeadsHook={savedLeadsHook} className="opacity-0 group-hover:opacity-100" />
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <SaveButton business={business} savedLeadsHook={savedLeadsHook} />
+            </div>
           )}
-          <OpportunityScoreRing score={business.fitScore} pulse={hot} />
+          <WOSBadge score={business.websiteOpportunityScore} />
         </div>
       </div>
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-2.5 flex items-center gap-2">
         <StarRating rating={business.googleRating} reviewCount={business.reviewCount} />
-        <PresenceChips footprint={business.footprint} />
+        {noSite ? (
+          <span className="text-[11px] font-semibold text-red-400">no website</span>
+        ) : (
+          <span className="text-[11px] text-emerald-500">has site</span>
+        )}
+      </div>
+
+      <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-[#888]">
+        {business.whyTheyNeedWebsite}
+      </p>
+
+      {/* 5 scores */}
+      <div className="mt-3">
+        <ScorePanel business={business} />
       </div>
 
       <div className="mt-2.5 flex flex-wrap gap-1.5">
-        <OpportunityBadge category={business.opportunityCategory} />
-        <span className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-medium ${CONTACT_STYLES[business.bestContactMethod]}`}>
-          <MessageCircle className="h-2.5 w-2.5" />
-          {CONTACT_LABELS[business.bestContactMethod]}
-        </span>
-        <DataSourceBadge source={business.dataSource} />
+        <DifficultyBadge level={business.difficultyToClose} />
+        <RevenueTag impact={business.revenueImpact} />
       </div>
-
-      <div className="mt-3 space-y-1">
-        <div className="flex items-center justify-between text-[10px] text-[#555]">
-          <span>Service fit</span>
-          <span className="tabular-nums font-medium text-[#888]">{business.fitScore}/100</span>
-        </div>
-        <div className="h-1 overflow-hidden rounded-full bg-[#2A2A2A]">
-          <div
-            className={`h-full bar-fill rounded-full ${getFitBarClass(business.fitScore)}`}
-            style={{ width: `${business.fitScore}%` }}
-          />
-        </div>
-      </div>
-
-      <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-[#888]">
-        {business.fitExplanation}
-      </p>
 
       <div className="mt-2.5 flex items-center gap-1 text-[11px] font-medium text-[#555] opacity-0 transition-opacity group-hover:opacity-100">
-        View analysis <ArrowRight className="h-3 w-3" />
+        View full analysis <ArrowRight className="h-3 w-3" />
       </div>
     </button>
   )

@@ -5,6 +5,7 @@ import type {
   LocalBusiness,
   OpportunityCategory,
   BusinessMaturity,
+  DifficultyToClose,
 } from '../types'
 import { presenceWeaknesses } from './digitalPresence'
 
@@ -14,6 +15,8 @@ export function calculateOpportunityScore(footprint: DigitalFootprint, rating: n
   if (!footprint.websiteExists) score += 22
   else if (footprint.websiteQualityScore < 40) score += 14
   else if (footprint.websiteQualityScore > 75) score -= 12
+
+  if (footprint.mobileFriendlinessScore < 40 && footprint.websiteExists) score += 8
 
   if (!footprint.instagramExists) score += 10
   else if (footprint.instagramActivityScore < 35) score += 12
@@ -95,6 +98,81 @@ export function deriveBusinessMaturity(
   return 'early'
 }
 
+/* ── Revenue impact estimates by industry ──────────────────────────────── */
+const REVENUE_RANGES: Record<string, { noSite: string; outdated: string; modernize: string }> = {
+  Dentist:        { noSite: '$5,000–$10,000', outdated: '$3,500–$7,000', modernize: '$2,500–$5,000' },
+  HVAC:           { noSite: '$3,000–$6,000',  outdated: '$2,500–$5,000', modernize: '$2,000–$4,000' },
+  Roofing:        { noSite: '$2,500–$5,000',  outdated: '$2,000–$4,500', modernize: '$1,800–$3,500' },
+  Plumber:        { noSite: '$2,500–$5,000',  outdated: '$2,000–$4,000', modernize: '$1,800–$3,500' },
+  Chiropractor:   { noSite: '$4,000–$8,000',  outdated: '$3,000–$6,500', modernize: '$2,500–$5,000' },
+  Landscaping:    { noSite: '$2,000–$4,500',  outdated: '$1,800–$4,000', modernize: '$1,500–$3,000' },
+  'Pest Control': { noSite: '$2,000–$4,000',  outdated: '$1,800–$3,500', modernize: '$1,500–$3,000' },
+  'Med Spa':      { noSite: '$6,000–$15,000', outdated: '$4,500–$10,000', modernize: '$3,500–$8,000' },
+}
+
+/* ── Industry-specific pitch angles ───────────────────────────────────── */
+function getWebsitePitchAngle(name: string, industry: string, footprint: DigitalFootprint, rating: number, reviewCount: number): string {
+  const ind = industry
+  const stars = `${rating}★ (${reviewCount} reviews)`
+
+  if (!footprint.websiteExists) {
+    const angles: Record<string, string> = {
+      Dentist:        `${name} has ${stars} but no website — patients searching for a dentist can't find or book them online. A modern site with online booking could add 10–20 new patients/month.`,
+      HVAC:           `Homeowners with a broken furnace search Google first. ${name} has no website — every emergency call that could've been theirs is going to a competitor with a site.`,
+      Roofing:        `Storm season drives a wave of urgent roofing searches. ${name} has ${stars} but no website to capture them — every lead goes to someone who does.`,
+      Plumber:        `Emergency plumbing calls happen fast. ${name} has no online presence — anyone searching 'plumber near me' can't find them, costing them calls every single day.`,
+      Chiropractor:   `Patients research and compare before booking a chiropractor. ${name} has ${stars} but no site — that's trust left on the table and appointments going elsewhere.`,
+      Landscaping:    `Homeowners looking for landscaping start on Google. ${name} has no website — their ${stars} reputation is invisible online, and their competitors are capturing the leads.`,
+      'Pest Control': `Pest problems are urgent. ${name} has no website — when someone searches 'pest control near me' at 10pm, a competitor with a fast, clear site gets the call.`,
+      'Med Spa':      `Med spa clients expect a luxury experience before they even walk in. ${name} has no website — that's an immediate credibility gap vs. competitors with polished online presence.`,
+    }
+    return angles[ind] ?? `${name} has strong local reviews (${stars}) but no website — every Google search for ${ind.toLowerCase()} in their area sends potential clients elsewhere.`
+  }
+
+  if (footprint.websiteQualityScore < 45) {
+    const angles: Record<string, string> = {
+      Dentist:        `${name} has ${stars} — that reputation deserves a website that converts visitors into booked appointments, not a dated site that makes them doubt the quality of care.`,
+      HVAC:           `${name}'s current website doesn't instill confidence when a homeowner is in a stressful situation. A fast, professional site with clear services and click-to-call wins more jobs.`,
+      Roofing:        `${name} has ${stars} but a weak website. In a market where homeowners compare 3 roofers, a polished site with project photos and reviews can win the bid.`,
+      Plumber:        `${name}'s site doesn't match the trust their ${stars} implies. A modern site with emergency service callouts and click-to-call converts more of their Google traffic.`,
+      Chiropractor:   `${name} has ${stars} but a website that undersells them. A professional site with team photos, patient testimonials, and online scheduling would significantly increase new patient flow.`,
+      Landscaping:    `${name}'s website quality score is low. Before/after galleries and a clear 'Get a Quote' flow on a modern site would convert more local homeowners searching for landscaping.`,
+      'Pest Control': `${name} has an outdated site. A clean, fast redesign with service guarantees, pricing tiers, and a 'Book Today' CTA converts urgency-driven visitors into paying customers.`,
+      'Med Spa':      `${name} offers premium services but their website signals the opposite. A high-end redesign aligned with their brand would attract higher-value clients and justify premium pricing.`,
+    }
+    return angles[ind] ?? `${name}'s existing website (quality: ${footprint.websiteQualityScore}/100) is actively losing clients to competitors with more professional online presence.`
+  }
+
+  if (footprint.mobileFriendlinessScore < 45) {
+    return `${name} has a website but it's not mobile-friendly — and over 70% of local searches happen on phones. A mobile-optimized redesign could immediately recover lost traffic and conversions.`
+  }
+
+  return `${name} has a functional website but it's not converting at its potential. UX improvements, faster load times, and a stronger call-to-action structure could measurably increase lead volume.`
+}
+
+function getRevenueImpact(industry: string, footprint: DigitalFootprint): string {
+  const ranges = REVENUE_RANGES[industry] ?? { noSite: '$2,500–$6,000', outdated: '$2,000–$4,500', modernize: '$1,500–$3,500' }
+  if (!footprint.websiteExists) return `${ranges.noSite} website build project`
+  if (footprint.websiteQualityScore < 45) return `${ranges.outdated} website redesign project`
+  return `${ranges.modernize} website modernization project`
+}
+
+function getDifficultyToClose(footprint: DigitalFootprint): DifficultyToClose {
+  if (!footprint.websiteExists) return 'easy'
+  if (footprint.websiteQualityScore < 40) return 'easy'
+  if (footprint.websiteQualityScore < 65) return 'medium'
+  return 'hard'
+}
+
+function getSocialActivityScore(footprint: DigitalFootprint): number {
+  const ig = footprint.instagramExists ? footprint.instagramActivityScore : 0
+  const fb = footprint.facebookExists ? footprint.facebookActivityScore : 0
+  const count = Number(footprint.instagramExists) + Number(footprint.facebookExists)
+  if (count === 0) return 0
+  return Math.round((ig + fb) / count)
+}
+
+/* ── Outreach intelligence ─────────────────────────────────────────────── */
 export function generateOutreachIntelligence(
   name: string,
   industry: string,
@@ -118,40 +196,42 @@ export function generateOutreachIntelligence(
 
   const painPoint =
     !footprint.websiteExists
-      ? 'Prospects cannot easily validate credibility or book online'
-      : footprint.instagramActivityScore < 35
-        ? 'Social channels are not driving consistent local discovery'
-        : footprint.brandingScore < 45
-          ? 'Brand feels dated compared to newer local competitors'
-          : 'Marketing systems are not compounding reviews into pipeline'
+      ? 'Potential clients cannot find, vet, or contact them online — every Google search for their service goes to a competitor with a website'
+      : footprint.websiteQualityScore < 45
+        ? 'Their existing website is driving visitors away rather than converting them into customers'
+        : footprint.mobileFriendlinessScore < 45
+          ? 'Over 70% of local searches are on mobile — their non-responsive site is losing those leads'
+          : 'Website is not optimized for lead conversion — visitors leave without taking action'
 
   const serviceSuggestion =
     !footprint.websiteExists
-      ? 'Website + local SEO launch package'
-      : footprint.instagramActivityScore < 40
-        ? 'Social media growth & content system'
-        : footprint.marketingMaturity < 50
-          ? 'Full-funnel local marketing retainer'
-          : 'Marketing automation & review acceleration'
+      ? 'Full website build + local SEO setup'
+      : footprint.websiteQualityScore < 45
+        ? 'Website redesign + conversion optimization'
+        : footprint.mobileFriendlinessScore < 45
+          ? 'Mobile-first redesign + speed optimization'
+          : 'Conversion rate optimization + UX refresh'
 
   const outreachOpener =
     rating >= 4.5 && reviewCount > 50
-      ? `Hi — noticed ${name} has strong Google reviews (${rating}★, ${reviewCount}+) but your digital presence isn't matching that reputation yet.`
-      : `Hi — I've been researching top ${industryLabel} in your area and ${name} stood out as a business with room to dominate local search.`
+      ? `Hi — I came across ${name} on Google and noticed your ${rating}★ rating with ${reviewCount}+ reviews. That kind of reputation deserves a website that actually converts visitors into booked ${industryLabel} appointments.`
+      : `Hi — I've been researching ${industryLabel} businesses in your area and came across ${name}. I noticed an opportunity to help you capture more leads online that you might be missing right now.`
 
   const outreachAngle =
-    opportunityScore >= 75
-      ? `Turn ${name}'s local reputation into a predictable lead engine`
-      : `Close the gap between offline success and online visibility`
+    !footprint.websiteExists
+      ? `${name} is invisible online — turn their strong reputation into a website that generates daily leads`
+      : opportunityScore >= 75
+        ? `${name}'s local reputation isn't translating to online revenue — a new site fixes that`
+        : `Close the gap between offline success and online lead generation for ${name}`
 
   const aiSummary =
-    opportunityScore >= 75
-      ? `${name} is a ${industryLabel} with ${rating}★ (${reviewCount} reviews) but ${topWeak.toLowerCase()}. Strong offline proof — digital channels are under-leveraged. High-fit for agency services that package credibility + acquisition. Opportunity score ${opportunityScore}/100.`
-      : `${name} shows ${footprint.digitalPresenceStrength}/100 digital presence strength. ${topWeak}. ${opportunityScore >= 60 ? 'Good timing for outreach before competitors consolidate local SERP.' : 'Monitor or nurture — stronger competitors may already own paid/social.'}`
+    !footprint.websiteExists
+      ? `${name} is a ${industryLabel} with ${rating}★ (${reviewCount} reviews) and zero web presence. Every Google search for ${industryLabel} in their area goes to a competitor with a website. High-priority prospect for a full website build. Opportunity score: ${opportunityScore}/100.`
+      : `${name} is a ${industryLabel} with ${rating}★ and a website quality score of ${footprint.websiteQualityScore}/100. ${topWeak}. ${opportunityScore >= 65 ? 'Strong fit for a website redesign — good timing before a competitor upgrades first.' : 'Moderate fit — position around conversion gains rather than starting from scratch.'}`
 
-  const outreachRecommendation = `Lead with: "${outreachOpener}" Offer a ${serviceSuggestion.toLowerCase()} audit focused on ${painPoint.toLowerCase()}. Reference their ${reviewCount} reviews and one specific gap (e.g. ${topWeak.split('—')[0].trim()}).`
+  const outreachRecommendation = `Lead with: "${outreachOpener}" Offer a free website audit highlighting ${painPoint.toLowerCase()}. Pitch a ${serviceSuggestion.toLowerCase()} with a concrete ROI frame (e.g. "3 more booked ${industryLabel} appointments/week pays for the site in a month").`
 
-  const suggestedServicePitch = `We help ${industryLabel} like ${name} turn strong local reputation into booked appointments — typically via ${serviceSuggestion.toLowerCase()}, without adding in-house marketing headcount.`
+  const suggestedServicePitch = `We build websites for ${industryLabel} businesses that generate real leads — not just brochure sites. For a ${industryLabel} with ${reviewCount} reviews like ${name}, a professional site typically adds 8–15 new client inquiries per month from Google alone.`
 
   return {
     aiSummary,
@@ -164,102 +244,38 @@ export function generateOutreachIntelligence(
   }
 }
 
-function normalizeServiceType(raw: string): string {
-  return raw.trim().toLowerCase()
-}
-
+/* ── Fit / Website Opportunity Score ───────────────────────────────────── */
 export function generateFitAnalysis(
   name: string,
   industry: string,
   footprint: DigitalFootprint,
-  serviceType: string,
+  _serviceType: string,
   opportunityScore: number,
   rating: number,
   reviewCount: number
 ): { fitScore: number; fitExplanation: string } {
-  const svc = normalizeServiceType(serviceType || 'marketing')
-  const industryLabel = industry.toLowerCase()
-
   let fitScore = Math.round(opportunityScore * 0.6 + 20)
 
-  const isWebsite = /website|web design|web dev|redesign|landing page/i.test(svc)
-  const isSocial = /social|instagram|facebook|content|tiktok|reels/i.test(svc)
-  const isSEO = /seo|search|google|rank|organic/i.test(svc)
-  const isBranding = /brand|logo|identity|design|visual/i.test(svc)
-  const isAds = /ads|paid|ppc|facebook ads|google ads|advertising/i.test(svc)
-  const isEmail = /email|newsletter|crm|automation/i.test(svc)
-  const isPhoto = /photo|photography|video|media/i.test(svc)
+  let explanation: string
 
-  let explanation = ''
-
-  if (isWebsite) {
-    if (!footprint.websiteExists) {
-      fitScore = Math.min(98, fitScore + 22)
-      explanation = `${name} has no website at all — a blank-slate opportunity for a full site build. With ${reviewCount} Google reviews and ${rating}★, the offline reputation is already there. A professional site could immediately convert local search traffic into booked appointments.`
-    } else if (footprint.websiteQualityScore < 45) {
-      fitScore = Math.min(98, fitScore + 14)
-      explanation = `${name} has an outdated or low-quality website (quality score: ${footprint.websiteQualityScore}/100). A redesign could immediately improve credibility and conversion rate. They have the reviews (${reviewCount}) to back up a premium digital presence.`
-    } else {
-      fitScore = Math.max(20, fitScore - 15)
-      explanation = `${name} already has a reasonably functional website (quality score: ${footprint.websiteQualityScore}/100). A redesign may be a harder sell unless you can position around UX improvements or conversion optimization.`
-    }
-  } else if (isSocial) {
-    if (!footprint.instagramExists && !footprint.facebookExists) {
-      fitScore = Math.min(98, fitScore + 20)
-      explanation = `${name} has zero social media presence — no Instagram, no Facebook. For a ${industryLabel} with ${rating}★ and ${reviewCount} reviews, this is a significant missed opportunity. They're a strong fit for a social media launch and content management package.`
-    } else if (footprint.instagramActivityScore < 40 || footprint.facebookActivityScore < 35) {
-      fitScore = Math.min(98, fitScore + 12)
-      explanation = `${name} has social accounts but low engagement — Instagram activity at ${footprint.instagramActivityScore}/100. Their strong offline reputation (${rating}★, ${reviewCount} reviews) isn't translating to social visibility. A content system could change that.`
-    } else {
-      fitScore = Math.max(20, fitScore - 10)
-      explanation = `${name} already maintains relatively active social channels. They may still benefit from content strategy and growth, but this is a softer fit — position around scaling, not starting from scratch.`
-    }
-  } else if (isSEO) {
-    if (!footprint.websiteExists) {
-      fitScore = Math.min(98, fitScore + 18)
-      explanation = `${name} has no website — they can't rank for anything. Before SEO, they need a site, which means a larger engagement opportunity. Lead with web + SEO as a bundle.`
-    } else if (footprint.websiteQualityScore < 55) {
-      fitScore = Math.min(98, fitScore + 14)
-      explanation = `${name} has a weak website (${footprint.websiteQualityScore}/100 quality) and almost certainly poor local SEO. With ${reviewCount} reviews and a ${rating}★ rating, they have review signals Google loves — they just need on-page optimization and a local SEO strategy to rank.`
-    } else {
-      fitScore = Math.max(25, fitScore - 8)
-      explanation = `${name} has a reasonable web presence. They may already have basic SEO in place. A technical audit could uncover gaps, but this is a moderate-fit opportunity.`
-    }
-  } else if (isBranding) {
-    if (footprint.brandingScore < 40) {
-      fitScore = Math.min(98, fitScore + 18)
-      explanation = `${name} has severely inconsistent or dated branding (score: ${footprint.brandingScore}/100). For a ${industryLabel} with ${rating}★, the brand should command the same trust their reviews do. A branding overhaul could directly impact perceived value and pricing power.`
-    } else if (footprint.brandingScore < 60) {
-      fitScore = Math.min(98, fitScore + 8)
-      explanation = `${name} has mediocre branding (${footprint.brandingScore}/100). There's room to improve cohesion and visual identity, especially if they want to compete on premium positioning.`
-    } else {
-      fitScore = Math.max(20, fitScore - 12)
-      explanation = `${name}'s branding is above average (${footprint.brandingScore}/100). A branding pitch may be a tough sell — consider positioning around a brand refresh rather than a full rebrand.`
-    }
-  } else if (isAds) {
-    const weakPresence = footprint.digitalPresenceStrength < 50
-    if (weakPresence && !footprint.websiteExists) {
-      fitScore = Math.min(98, fitScore + 10)
-      explanation = `${name} lacks a website, making paid ads less effective without a landing page. Consider bundling ads with a landing page build. Good long-term opportunity, but needs foundation work first.`
-    } else if (rating >= 4.5 && reviewCount > 50) {
-      fitScore = Math.min(98, fitScore + 16)
-      explanation = `${name} has strong social proof (${rating}★, ${reviewCount} reviews) — the raw material for high-converting local ad campaigns. A paid ads strategy with review-led creative could deliver fast ROI for this ${industryLabel}.`
-    } else {
-      fitScore = Math.min(98, fitScore + 8)
-      explanation = `${name} could benefit from targeted local ads to increase new customer acquisition. Moderate fit — stronger if paired with a landing page or offer.`
-    }
-  } else if (isPhoto) {
-    const weakImg = footprint.brandingScore < 50 || footprint.websiteQualityScore < 50
-    if (weakImg) {
-      fitScore = Math.min(98, fitScore + 16)
-      explanation = `${name} has low visual quality scores across their digital presence. Professional photography or video would immediately elevate their website, social, and Google Business profile — making them a natural fit for media services.`
-    } else {
-      fitScore = Math.min(98, fitScore + 6)
-      explanation = `${name} could benefit from updated media assets, though their current visual quality is decent. A good pitch would focus on seasonal content or video for social media.`
-    }
+  if (!footprint.websiteExists) {
+    fitScore = Math.min(98, fitScore + 22)
+    explanation = `${name} has no website — a complete blank-slate opportunity. With ${reviewCount} Google reviews and a ${rating}★ rating, the offline reputation is already proven. A professional site targeting local search could immediately convert online traffic into booked appointments. This is the easiest pitch: they need a site, full stop.`
+  } else if (footprint.websiteQualityScore < 35) {
+    fitScore = Math.min(98, fitScore + 18)
+    explanation = `${name} has a severely outdated website (quality: ${footprint.websiteQualityScore}/100). The site is likely slow, not mobile-friendly, and not converting visitors. With ${reviewCount} reviews and ${rating}★, the business has earned trust — their website is actively undercutting it. A redesign is a straightforward ROI pitch.`
+  } else if (footprint.websiteQualityScore < 55) {
+    fitScore = Math.min(98, fitScore + 12)
+    explanation = `${name} has a below-average website (quality: ${footprint.websiteQualityScore}/100). It exists, but it's not doing the job — weak mobile experience, poor conversion flow, or dated design. They have the reviews (${reviewCount}) to justify a premium digital presence. A redesign pitch around lead generation ROI is the angle.`
+  } else if (footprint.mobileFriendlinessScore < 40) {
+    fitScore = Math.min(98, fitScore + 10)
+    explanation = `${name} has a passable website but poor mobile experience (mobile score: ${footprint.mobileFriendlinessScore}/100). Most local searches happen on phones — they're losing leads every day. A mobile-first redesign is a concrete, specific pitch with measurable impact.`
+  } else if (footprint.websiteQualityScore > 72) {
+    fitScore = Math.max(18, fitScore - 18)
+    explanation = `${name} already has a strong website (quality: ${footprint.websiteQualityScore}/100). A redesign pitch will be difficult — they likely invested recently. Consider positioning around niche improvements like booking flow, speed optimization, or local SEO rather than a full rebuild.`
   } else {
     fitScore = Math.min(98, fitScore + 4)
-    explanation = `${name} is a ${industryLabel} with ${rating}★ and ${reviewCount} reviews but a digital presence score of ${footprint.digitalPresenceStrength}/100. ${footprint.digitalPresenceStrength < 45 ? 'They are under-optimized across the board — a strong prospect for general marketing services.' : 'They have moderate digital presence with specific gaps your services could address.'}`
+    explanation = `${name} has a mid-range website (quality: ${footprint.websiteQualityScore}/100). There's room to improve, but it's not an obvious pain point. A strong pitch would focus on specific conversion issues — call-to-action placement, load speed, or local keyword optimization — rather than a full redesign.`
   }
 
   fitScore = Math.min(98, Math.max(12, Math.round(fitScore)))
@@ -283,46 +299,37 @@ export function determineBestContactMethod(
   footprint: DigitalFootprint,
   hasPhone: boolean
 ): { method: ContactMethod; reason: string } {
-  const visibility = generateContactChannelVisibility(footprint, hasPhone)
-
   if (footprint.instagramExists && footprint.instagramActivityScore > 55) {
     return {
       method: 'instagram',
-      reason: `Instagram is the best outreach channel — the business actively posts with a ${footprint.instagramActivityScore}/100 activity score. DMs are likely to be seen by the owner directly.`,
-    }
-  }
-
-  if (hasPhone && visibility.phone > 70) {
-    return {
-      method: 'phone',
-      reason: `Direct phone call is recommended. With ${footprint.reviewCount !== undefined ? 'strong' : ''} Google presence, the owner likely handles calls personally. Best for high-urgency, first-impression outreach.`,
-    }
-  }
-
-  if (footprint.websiteExists && footprint.websiteQualityScore > 40) {
-    return {
-      method: 'website_form',
-      reason: `Their website has a contact form (quality score: ${footprint.websiteQualityScore}/100). Reaching out via the form is professional and signals you researched them — good for warm, value-led outreach.`,
-    }
-  }
-
-  if (footprint.facebookExists && footprint.facebookActivityScore > 30) {
-    return {
-      method: 'facebook',
-      reason: `Facebook is their most active channel (activity: ${footprint.facebookActivityScore}/100). Business messaging on Facebook is monitored and often reaches the owner directly.`,
+      reason: `Instagram is the best outreach channel — the business actively posts with a ${footprint.instagramActivityScore}/100 activity score. DMs are likely seen by the owner directly.`,
     }
   }
 
   if (hasPhone) {
     return {
       method: 'phone',
-      reason: `Phone is the most reliable channel for this business. Their limited digital presence makes direct calls the fastest path to the decision maker.`,
+      reason: `Direct phone call is recommended. Local trade businesses and service providers typically answer their phones — a short, specific call about their website opportunity is the fastest path to a conversation.`,
+    }
+  }
+
+  if (footprint.websiteExists && footprint.websiteQualityScore > 40) {
+    return {
+      method: 'website_form',
+      reason: `Their website has a contact form. Reaching out via the form is professional and signals you researched them specifically — good for a value-led website pitch.`,
+    }
+  }
+
+  if (footprint.facebookExists && footprint.facebookActivityScore > 30) {
+    return {
+      method: 'facebook',
+      reason: `Facebook is their most active channel (activity: ${footprint.facebookActivityScore}/100). Business messaging on Facebook often reaches the owner directly.`,
     }
   }
 
   return {
     method: 'email',
-    reason: `Email outreach via their listed contact is the most practical option. Keep it concise, lead with a specific observation about their digital presence, and include one clear call to action.`,
+    reason: `Email outreach is the most practical option. Keep it short — one specific observation about their website gap, one concrete outcome, one CTA.`,
   }
 }
 
@@ -342,10 +349,17 @@ export function buildLocalBusiness(
     | 'outreachRecommendation'
     | 'suggestedServicePitch'
     | 'fitScore'
+    | 'websiteOpportunityScore'
     | 'fitExplanation'
     | 'bestContactMethod'
     | 'bestContactMethodReason'
     | 'contactChannelVisibility'
+    | 'socialActivityScore'
+    | 'leadOpportunityScore'
+    | 'whyTheyNeedWebsite'
+    | 'revenueImpact'
+    | 'websitePitchAngle'
+    | 'difficultyToClose'
   >
 ): LocalBusiness {
   const weaknesses = presenceWeaknesses(partial.footprint)
@@ -390,6 +404,14 @@ export function buildLocalBusiness(
     Boolean(partial.phone)
   )
 
+  const socialActivityScore = getSocialActivityScore(partial.footprint)
+  const whyTheyNeedWebsite = getWebsitePitchAngle(
+    partial.name, partial.industry, partial.footprint, partial.googleRating, partial.reviewCount
+  )
+  const revenueImpact = getRevenueImpact(partial.industry, partial.footprint)
+  const websitePitchAngle = outreach.outreachAngle
+  const difficultyToClose = getDifficultyToClose(partial.footprint)
+
   return {
     ...partial,
     opportunityScore,
@@ -403,9 +425,16 @@ export function buildLocalBusiness(
     ),
     ...outreach,
     fitScore,
+    websiteOpportunityScore: fitScore,
+    leadOpportunityScore: fitScore,
     fitExplanation,
     bestContactMethod,
     bestContactMethodReason,
     contactChannelVisibility,
+    socialActivityScore,
+    whyTheyNeedWebsite,
+    revenueImpact,
+    websitePitchAngle,
+    difficultyToClose,
   }
 }

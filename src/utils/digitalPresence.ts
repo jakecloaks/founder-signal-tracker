@@ -3,6 +3,7 @@ import type { DigitalFootprint } from '../types'
 export interface PresenceInput {
   websiteExists: boolean
   websiteQualityScore: number
+  mobileFriendlinessScore: number
   instagramExists: boolean
   instagramActivityScore: number
   facebookExists: boolean
@@ -30,6 +31,7 @@ export function analyzeDigitalPresence(input: PresenceInput): DigitalFootprint {
 
   const channelScores = [
     input.websiteExists ? input.websiteQualityScore : 0,
+    input.websiteExists ? input.mobileFriendlinessScore : 0,
     socialAvg,
     input.brandingScore,
     input.consistencyScore,
@@ -61,6 +63,7 @@ export function analyzeDigitalPresence(input: PresenceInput): DigitalFootprint {
   return {
     websiteExists: input.websiteExists,
     websiteQualityScore: input.websiteQualityScore,
+    mobileFriendlinessScore: input.websiteExists ? input.mobileFriendlinessScore : 0,
     instagramExists: input.instagramExists,
     instagramActivityScore: input.instagramActivityScore,
     facebookExists: input.facebookExists,
@@ -76,13 +79,14 @@ export function analyzeDigitalPresence(input: PresenceInput): DigitalFootprint {
 
 export function presenceWeaknesses(footprint: DigitalFootprint): string[] {
   const w: string[] = []
-  if (!footprint.websiteExists) w.push('No website — high friction for new patient/customer discovery')
-  else if (footprint.websiteQualityScore < 45) w.push('Outdated or low-quality website')
-  if (!footprint.instagramExists) w.push('Missing Instagram presence')
+  if (!footprint.websiteExists) w.push('No website — potential customers cannot find or vet them online')
+  else if (footprint.websiteQualityScore < 45) w.push('Outdated or low-quality website hurting credibility')
+  else if (footprint.mobileFriendlinessScore < 40) w.push('Website is not mobile-friendly — most traffic is on mobile')
+  if (!footprint.instagramExists) w.push('No Instagram presence')
   else if (footprint.instagramActivityScore < 35) w.push('Inactive or inconsistent Instagram posting')
   if (!footprint.facebookExists) w.push('No Facebook business page')
   else if (footprint.facebookActivityScore < 30) w.push('Weak Facebook engagement')
-  if (footprint.brandingScore < 45) w.push('Inconsistent or dated branding')
+  if (footprint.brandingScore < 45) w.push('Inconsistent or dated visual branding')
   if (footprint.consistencyScore < 40) w.push('Fragmented online presence across channels')
   if (footprint.reviewQualityScore < 50) w.push('Review volume or rating below local competitors')
   return w

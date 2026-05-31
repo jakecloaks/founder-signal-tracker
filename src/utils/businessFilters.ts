@@ -19,29 +19,23 @@ export function filterBusinesses(
   }
 
   switch (filters.active) {
-    case 'has_website':
-      result = result.filter((b) => b.footprint.websiteExists)
-      break
     case 'no_website':
       result = result.filter((b) => !b.footprint.websiteExists)
       break
-    case 'high_opportunity':
-      result = result.filter((b) => b.opportunityScore >= 70)
-      break
-    case 'weak_social':
-      result = result.filter(
-        (b) =>
-          !b.footprint.instagramExists ||
-          b.footprint.instagramActivityScore < 40 ||
-          !b.footprint.facebookExists ||
-          b.footprint.facebookActivityScore < 35
-      )
+    case 'outdated_site':
+      result = result.filter((b) => b.footprint.websiteExists && b.footprint.websiteQualityScore < 50)
       break
     case 'high_reviews':
       result = result.filter((b) => b.googleRating >= 4.5 && b.reviewCount >= 50)
       break
-    case 'low_reviews':
-      result = result.filter((b) => b.googleRating < 4.2 || b.reviewCount < 40)
+    case 'easy_to_close':
+      result = result.filter((b) => b.difficultyToClose === 'easy')
+      break
+    case 'has_website':
+      result = result.filter((b) => b.footprint.websiteExists)
+      break
+    case 'weak_branding':
+      result = result.filter((b) => b.footprint.brandingScore < 45)
       break
     case 'active_growth':
       result = result.filter((b) => b.activeGrowth)
@@ -50,16 +44,16 @@ export function filterBusinesses(
       break
   }
 
-  return result.sort((a, b) => b.opportunityScore - a.opportunityScore)
+  return result.sort((a, b) => b.websiteOpportunityScore - a.websiteOpportunityScore)
 }
 
 export const FILTER_OPTIONS: { key: BusinessFilterKey; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'high_opportunity', label: 'High opportunity' },
-  { key: 'no_website', label: 'No website' },
-  { key: 'has_website', label: 'Has website' },
-  { key: 'weak_social', label: 'Weak social' },
+  { key: 'all',          label: 'All' },
+  { key: 'no_website',   label: 'No website' },
+  { key: 'outdated_site',label: 'Outdated site' },
+  { key: 'easy_to_close',label: 'Easy to close' },
   { key: 'high_reviews', label: 'High reviews' },
-  { key: 'low_reviews', label: 'Low reviews' },
-  { key: 'active_growth', label: 'Active growth' },
+  { key: 'weak_branding',label: 'Weak branding' },
+  { key: 'has_website',  label: 'Has website' },
+  { key: 'active_growth',label: 'Growing' },
 ]

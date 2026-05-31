@@ -2,15 +2,28 @@ import { mockBusinessProvider } from './mockBusinessProvider'
 import { placesApiBusinessProvider } from './placesApiBusinessProvider'
 import type { BusinessSearchParams, BusinessSearchResult } from './types'
 
-export const DEFAULT_SEARCH = { industry: 'dentists', location: 'Utah', serviceType: 'website redesign' }
+export const DEFAULT_SEARCH = { industry: 'dentists', location: 'Salt Lake City, UT', serviceType: 'website redesign' }
 
 export const SUGGESTED_SEARCHES = [
-  { industry: 'dentists', location: 'Utah', service: 'website redesign' },
-  { industry: 'gyms', location: 'Miami', service: 'social media' },
-  { industry: 'roofing companies', location: 'Texas', service: 'local SEO' },
-  { industry: 'salons', location: 'London', service: 'branding' },
-  { industry: 'law firms', location: 'Chicago', service: 'paid ads' },
-  { industry: 'real estate agencies', location: 'Dubai', service: 'photography' },
+  { industry: 'dentists',      location: 'Salt Lake City, UT', service: 'website redesign' },
+  { industry: 'hvac',          location: 'Phoenix, AZ',        service: 'website redesign' },
+  { industry: 'roofers',       location: 'Dallas, TX',         service: 'website redesign' },
+  { industry: 'plumbers',      location: 'Chicago, IL',        service: 'website redesign' },
+  { industry: 'chiropractors', location: 'San Diego, CA',      service: 'website redesign' },
+  { industry: 'landscaping',   location: 'Atlanta, GA',        service: 'website redesign' },
+  { industry: 'pest control',  location: 'Orlando, FL',        service: 'website redesign' },
+  { industry: 'med spas',      location: 'Austin, TX',         service: 'website redesign' },
+]
+
+export const TARGET_INDUSTRIES = [
+  'Dentist',
+  'HVAC',
+  'Roofing',
+  'Plumber',
+  'Chiropractor',
+  'Landscaping',
+  'Pest Control',
+  'Med Spa',
 ]
 
 let cachedPlacesAvailable: boolean | null = null
@@ -31,7 +44,7 @@ export function resetProviderCache(): void {
 export async function searchBusinesses(
   industry: string,
   location: string,
-  serviceType = ''
+  serviceType = 'website redesign'
 ): Promise<BusinessSearchResult> {
   const params: BusinessSearchParams = { industry, location, serviceType }
 

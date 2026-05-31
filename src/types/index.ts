@@ -78,6 +78,8 @@ export type BusinessMaturity = 'early' | 'growing' | 'established' | 'mature'
 
 export type ContactMethod = 'instagram' | 'phone' | 'website_form' | 'email' | 'facebook'
 
+export type DifficultyToClose = 'easy' | 'medium' | 'hard'
+
 export interface ContactChannelVisibility {
   instagram: number
   facebook: number
@@ -89,6 +91,7 @@ export interface ContactChannelVisibility {
 export interface DigitalFootprint {
   websiteExists: boolean
   websiteQualityScore: number
+  mobileFriendlinessScore: number
   instagramExists: boolean
   instagramActivityScore: number
   facebookExists: boolean
@@ -133,21 +136,32 @@ export interface LocalBusiness {
   lastUpdated: string
   activeGrowth: boolean
   serviceType: string
+  /** Primary score — website redesign opportunity (0–100) */
   fitScore: number
+  /** Alias for fitScore — displayed as "Website Opportunity Score" */
+  websiteOpportunityScore: number
   fitExplanation: string
   bestContactMethod: ContactMethod
   bestContactMethodReason: string
   contactChannelVisibility: ContactChannelVisibility
+  /** Derived website sub-scores */
+  socialActivityScore: number
+  leadOpportunityScore: number
+  /** Website redesign-specific analysis */
+  whyTheyNeedWebsite: string
+  revenueImpact: string
+  websitePitchAngle: string
+  difficultyToClose: DifficultyToClose
 }
 
 export type BusinessFilterKey =
   | 'all'
-  | 'has_website'
   | 'no_website'
-  | 'high_opportunity'
-  | 'weak_social'
+  | 'outdated_site'
   | 'high_reviews'
-  | 'low_reviews'
+  | 'easy_to_close'
+  | 'has_website'
+  | 'weak_branding'
   | 'active_growth'
 
 export interface BusinessFilters {
