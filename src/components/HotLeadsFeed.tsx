@@ -1,48 +1,62 @@
-import { Zap } from 'lucide-react'
 import type { FeedEvent } from '../types'
 import { relativeTime } from '../utils/signalEngine'
+import { MrQuakEmpty } from './MrQuak'
 
 interface HotLeadsFeedProps {
   events: FeedEvent[]
   title?: string
 }
 
-function fitStyle(score: number) {
-  if (score >= 80) return 'bg-orange-500/15 text-orange-400 border-orange-500/25'
-  if (score >= 65) return 'bg-[#4A90E2]/15 text-[#4A90E2] border-[#4A90E2]/25'
-  if (score >= 45) return 'bg-amber-500/15 text-amber-400 border-amber-500/25'
-  return 'bg-white/5 text-[#888] border-[#2A2A2A]'
+function scoreStyle(score: number) {
+  if (score >= 80) return 'bg-[#E07A45]/10 text-[#E07A45] border-[#E07A45]/20'
+  if (score >= 65) return 'bg-[#4A8FE0]/10 text-[#4A8FE0] border-[#4A8FE0]/20'
+  if (score >= 45) return 'bg-[#E8A520]/10 text-[#E8A520] border-[#E8A520]/20'
+  return 'bg-[#1F1F30] text-[#82829A] border-[#1F1F30]'
 }
 
 export function HotLeadsFeed({ events, title = 'Live feed' }: HotLeadsFeedProps) {
   const topEvents = events.slice(0, 8)
   return (
-    <div className="overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#1A1A1A]">
-      <div className="flex items-center gap-2 border-b border-[#2A2A2A] bg-[#111] px-4 py-2.5">
-        <span className="live-dot h-1.5 w-1.5 rounded-full bg-orange-500" />
-        <Zap className="h-3.5 w-3.5 text-orange-400" />
-        <h3 className="text-xs font-semibold text-[#FAFAF9]">{title}</h3>
-        <span className="ml-auto rounded-full border border-[#2A2A2A] bg-[#1A1A1A] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#555]">
+    <div className="overflow-hidden rounded-xl border border-[#1F1F30] bg-[#16161D]">
+      {/* Header */}
+      <div className="flex items-center gap-2 border-b border-[#1F1F30] px-4 py-3">
+        <span className="live-dot h-1.5 w-1.5 rounded-full bg-[#E07A45]" />
+        <h3 className="flex-1 text-xs font-semibold text-[#EAEAF0]">{title}</h3>
+        <span className="rounded-full border border-[#1F1F30] bg-[#101015] px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-[#424258]">
           Live
         </span>
       </div>
+
+      {/* Items */}
       <div>
         {topEvents.length === 0 ? (
-          <p className="px-4 py-6 text-center text-xs text-[#555]">No signals yet</p>
+          <MrQuakEmpty
+            title="No signals yet"
+            subtitle="MrQuak is watching for opportunities"
+          />
         ) : (
           topEvents.map((event) => (
             <div
               key={event.id}
-              className="flex items-center gap-3 border-b border-[#1E1E1E] px-4 py-2.5 last:border-0 transition-colors hover:bg-[#1E1E1E]"
+              className="flex items-center gap-3 border-b border-[#1A1A28] px-4 py-2.5 last:border-0 transition-colors hover:bg-[#1C1C26]"
             >
-              <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border text-xs font-bold tabular-nums ${fitStyle(event.intentScore)}`}>
+              {/* Score chip */}
+              <span
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-[11px] font-bold tabular-nums ${scoreStyle(event.intentScore)}`}
+              >
                 {event.intentScore}
               </span>
+
+              {/* Content */}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-[#FAFAF9]">{event.companyName}</p>
-                <p className="truncate text-[11px] text-[#888]">{event.signal}</p>
+                <p className="truncate text-xs font-semibold text-[#EAEAF0]">{event.companyName}</p>
+                <p className="truncate text-[11px] leading-snug text-[#82829A]">{event.signal}</p>
               </div>
-              <span className="shrink-0 text-[10px] text-[#555]">{relativeTime(event.timestamp)}</span>
+
+              {/* Time */}
+              <span className="shrink-0 text-[10px] text-[#424258]">
+                {relativeTime(event.timestamp)}
+              </span>
             </div>
           ))
         )}

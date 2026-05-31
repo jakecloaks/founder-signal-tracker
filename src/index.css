@@ -5,28 +5,34 @@
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
-/* ─── Brand tokens ─────────────────────────────────────── */
+/* ─── Brand tokens ──────────────────────────────────────────────── */
 :root {
-  --bg:              #0D0D0D;
-  --bg-alt:          #111111;
-  --surface:         #1A1A1A;
-  --surface-hover:   #1E1E1E;
-  --surface-raised:  #222222;
-  --border:          #2A2A2A;
-  --border-strong:   #333333;
-  --text:            #FAFAF9;
-  --text-2:          #888888;
-  --text-3:          #555555;
-  --accent:          #4A90E2;
-  --accent-hover:    #3D7CC9;
-  --accent-subtle:   rgba(74, 144, 226, 0.12);
-  --accent-border:   rgba(74, 144, 226, 0.3);
-  --hot:             #f97316;
-  --hot-subtle:      rgba(249, 115, 22, 0.12);
-  --success:         #22c55e;
-  --success-subtle:  rgba(34, 197, 94, 0.12);
-  --warn:            #f59e0b;
-  --warn-subtle:     rgba(245, 158, 11, 0.12);
+  /* Cool dark surfaces — slight blue-black undertone (like Linear) */
+  --bg:              #0C0C10;
+  --bg-alt:          #101015;
+  --surface:         #16161D;
+  --surface-hover:   #1C1C26;
+  --surface-raised:  #1E1E2A;
+  --border:          #1F1F30;
+  --border-strong:   #2A2A42;
+  /* Cool-tinted text (not warm yellow-white) */
+  --text:            #EAEAF0;
+  --text-2:          #82829A;
+  --text-3:          #424258;
+  /* Accent — keep Signal Blue but use more softly */
+  --accent:          #4A8FE0;
+  --accent-hover:    #3A7CC8;
+  --accent-subtle:   rgba(74, 143, 224, 0.08);
+  --accent-border:   rgba(74, 143, 224, 0.2);
+  /* Status */
+  --hot:             #E07A45;
+  --hot-subtle:      rgba(224, 122, 69, 0.09);
+  --success:         #3DCC6E;
+  --success-subtle:  rgba(61, 204, 110, 0.09);
+  --warn:            #E8A520;
+  --warn-subtle:     rgba(232, 165, 32, 0.09);
+  --danger:          #D95555;
+  --danger-subtle:   rgba(217, 85, 85, 0.09);
 }
 
 * { box-sizing: border-box; }
@@ -43,33 +49,44 @@ body {
 
 #root { min-height: 100vh; }
 
-/* ─── Surface utilities ────────────────────────────────── */
+/* ─── Surface utilities ─────────────────────────────────────────── */
 .panel {
   background: var(--surface);
   border: 1px solid var(--border);
 }
-
 .panel-raised {
   background: var(--surface-raised);
   border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
 }
-
-/* Legacy alias */
 .glass {
   background: var(--surface);
   border: 1px solid var(--border);
 }
 
-/* ─── Card interactions ────────────────────────────────── */
+/* ─── Premium card styles ───────────────────────────────────────── */
+.card-premium {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.card-premium:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+
+/* Legacy card interactions */
 .card-lift {
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 .card-lift:hover {
   background: var(--surface-hover);
   border-color: var(--border-strong);
-  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
-
 .card-hover {
   transition: background 0.15s ease, border-color 0.15s ease;
 }
@@ -78,75 +95,64 @@ body {
   border-color: var(--border-strong);
 }
 
-/* ─── Animations ───────────────────────────────────────── */
-.fade-in { animation: fade-in 0.2s ease-out both; }
-.stagger-1 { animation-delay: 40ms; }
-.stagger-2 { animation-delay: 80ms; }
-.stagger-3 { animation-delay: 120ms; }
-.stagger-4 { animation-delay: 160ms; }
+/* ─── Animations ────────────────────────────────────────────────── */
+.fade-in { animation: fade-in 0.25s ease-out both; }
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(3px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.slide-up { animation: slide-up 0.26s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.slide-up { animation: slide-up 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* ─── Bars ─────────────────────────────────────────────── */
-.bar-fill { transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
-.fit-bar-hot    { background: var(--hot); }
-.fit-bar-strong { background: var(--accent); }
-.fit-bar-mid    { background: var(--warn); }
-.fit-bar-low    { background: var(--border-strong); }
+/* ─── Bars ──────────────────────────────────────────────────────── */
+.bar-fill { transition: width 0.55s cubic-bezier(0.16, 1, 0.3, 1); }
 
-.chart-bar-fill { transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
-
-/* ─── Live indicators ──────────────────────────────────── */
+/* ─── Live indicators ───────────────────────────────────────────── */
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
+  50%       { opacity: 0.35; }
 }
-.live-dot { animation: pulse-dot 2s ease-in-out infinite; }
+.live-dot { animation: pulse-dot 2.4s ease-in-out infinite; }
 
-.live-flash { animation: live-flash 0.6s ease-out; }
+.live-flash { animation: live-flash 0.8s ease-out; }
 @keyframes live-flash {
   0%   { background-color: var(--accent-subtle); }
   100% { background-color: transparent; }
 }
 
-/* ─── Skeleton shimmer ─────────────────────────────────── */
+/* ─── Skeleton shimmer ──────────────────────────────────────────── */
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position:  200% 0; }
 }
 .shimmer-bar {
-  background: linear-gradient(90deg, #1A1A1A 25%, #242424 50%, #1A1A1A 75%);
+  background: linear-gradient(90deg, #16161D 25%, #1E1E2A 50%, #16161D 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.8s infinite;
+  animation: shimmer 2s infinite;
   border-radius: 4px;
 }
 
-/* ─── Score ring compat ────────────────────────────────── */
-.score-ring-fill { transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
-.score-pulse { animation: none; }
-.feed-track  { animation: none; }
-
-/* ─── Blurred locked results ───────────────────────────── */
+/* ─── Lock blur ─────────────────────────────────────────────────── */
 .results-locked { position: relative; overflow: hidden; }
 .results-locked-blur {
   filter: blur(3px);
   pointer-events: none;
   user-select: none;
-  opacity: 0.4;
+  opacity: 0.35;
 }
 .results-locked-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(13,13,13,0.3) 0%, rgba(13,13,13,0.88) 40%, #0D0D0D 100%);
+  background: linear-gradient(to bottom, rgba(12,12,16,0.2) 0%, rgba(12,12,16,0.9) 45%, #0C0C10 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -154,31 +160,59 @@ body {
   z-index: 10;
 }
 
-/* ─── Typography helpers ───────────────────────────────── */
+/* ─── Score ring compat ─────────────────────────────────────────── */
+.score-ring-fill { transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+.score-pulse { animation: none; }
+.feed-track  { animation: none; }
+/* Removed: score-hot-glow, accent-glow (no more glow rings) */
+
+/* ─── Typography ────────────────────────────────────────────────── */
 .heading-display {
-  font-size: 3.75rem;
+  font-size: 3.5rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
 }
 .heading-1 {
-  font-size: 2.25rem;
+  font-size: 2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
 .heading-2 {
-  font-size: 1.5rem;
+  font-size: 1.375rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   line-height: 1.3;
 }
 
-/* ─── Accent glow (hot leads) ──────────────────────────── */
-.score-hot-glow { box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2); }
-.accent-glow    { box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2); }
-
-/* ─── Hero section ─────────────────────────────────────── */
-.hero-glow {
-  background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(74, 144, 226, 0.08), transparent);
+/* ─── Label style (replaces noisy uppercase labels) ────────────── */
+.label-subtle {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
 }
+
+/* ─── Divider line ──────────────────────────────────────────────── */
+.divider { border-color: var(--border); }
+
+/* ─── MrQuak mascot moments ─────────────────────────────────────── */
+@keyframes quak-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
+}
+.quak-float { animation: quak-float 3.5s ease-in-out infinite; }
+
+/* ─── Hero subtle ───────────────────────────────────────────────── */
+.hero-subtle {
+  background: radial-gradient(ellipse 55% 35% at 50% 0%, rgba(74, 143, 224, 0.05), transparent);
+}
+
+/* ─── Bars (fit) ────────────────────────────────────────────────── */
+.fit-bar-hot    { background: var(--hot); }
+.fit-bar-strong { background: var(--accent); }
+.fit-bar-mid    { background: var(--warn); }
+.fit-bar-low    { background: var(--border-strong); }
+.chart-bar-fill { transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1); }
