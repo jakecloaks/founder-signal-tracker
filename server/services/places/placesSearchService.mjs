@@ -1,8 +1,9 @@
 import { isGooglePlacesConfigured, searchGooglePlaces } from './googlePlacesProvider.mjs'
-import { analyzeWebsite } from '../../websiteAnalyzer.mjs'
+import { analyzeWebsiteUrl } from '../../websiteAnalyzer.mjs'
 
 /**
- * Resolves business search — Google Places when configured, otherwise throws.
+ * Resolves business search using Google Places API.
+ * Website analysis is URL-based (instant, no network calls).
  * @param {{ industry: string, location: string }} params
  */
 export async function resolvePlacesSearch(params) {
@@ -21,13 +22,11 @@ export async function resolvePlacesSearch(params) {
 
   const places = await searchGooglePlaces(industry, location)
 
-  // Run website analysis in parallel for all places
-  const analyzed = await Promise.all(
-    places.map(async (place) => {
-      const websiteAnalysis = await analyzeWebsite(place.websiteUrl)
-      return { ...place, websiteAnalysis }
-    })
-  )
+  // URL-based analysis — instant, no network calls
+  const analyzed = places.map((place) => ({
+    ...place,
+    websiteAnalysis: analyzeWebsiteUrl(place.websiteUrl),
+  }))
 
   return {
     source: 'google_places',
