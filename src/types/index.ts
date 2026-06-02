@@ -166,6 +166,8 @@ export type BusinessFilterKey =
   | 'weak_branding'
   | 'active_growth'
 
+export type BusinessSortKey = 'opportunity' | 'distance'
+
 export interface BusinessFilters {
   active: BusinessFilterKey
 }

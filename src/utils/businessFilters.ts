@@ -1,9 +1,18 @@
-import type { BusinessFilterKey, BusinessFilters, LocalBusiness } from '../types'
+import type { BusinessFilterKey, BusinessFilters, BusinessSortKey, LocalBusiness } from '../types'
+
+function parseDistanceKm(distance?: string) {
+  if (!distance) return null
+  const normalized = distance.trim().toLowerCase()
+  const match = normalized.match(/([0-9]+(?:\.[0-9]+)?)/)
+  if (!match) return null
+  return parseFloat(match[1])
+}
 
 export function filterBusinesses(
   businesses: LocalBusiness[],
   filters: BusinessFilters,
-  textQuery: string
+  textQuery: string,
+  sortBy: BusinessSortKey = 'opportunity',
 ): LocalBusiness[] {
   let result = [...businesses]
   const q = textQuery.trim().toLowerCase()
@@ -42,6 +51,17 @@ export function filterBusinesses(
       break
     default:
       break
+  }
+
+  if (sortBy === 'distance') {
+    return result.sort((a, b) => {
+      const aKm = parseDistanceKm(a.distance)
+      const bKm = parseDistanceKm(b.distance)
+      if (aKm == null && bKm == null) return 0
+      if (aKm == null) return 1
+      if (bKm == null) return -1
+      return aKm - bKm
+    })
   }
 
   return result.sort((a, b) => b.websiteOpportunityScore - a.websiteOpportunityScore)

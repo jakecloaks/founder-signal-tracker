@@ -26,6 +26,7 @@ import { MrQuakEmpty } from "../components/MrQuak";
 import type {
   BusinessFilterKey,
   BusinessFilters,
+  BusinessSortKey,
   LocalBusiness,
 } from "../types";
 
@@ -63,10 +64,12 @@ export function DashboardPage() {
   const [industry, setIndustry] = useState(DEFAULT_SEARCH.industry);
   const [location, setLocation] = useState(DEFAULT_SEARCH.location);
   const [serviceType, setServiceType] = useState(DEFAULT_SEARCH.serviceType);
+  const [radius, setRadius] = useState(10);
   const [businesses, setBusinesses] = useState<LocalBusiness[]>([]);
   const [dataSource, setDataSource] = useState<BusinessDataSource>("mock");
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<BusinessFilters>({ active: "all" });
+  const [sortBy, setSortBy] = useState<BusinessSortKey>("opportunity");
   const [selected, setSelected] = useState<LocalBusiness | null>(null);
   const [scanning, setScanning] = useState(false);
   const [listView, setListView] = useState(true);
@@ -79,17 +82,20 @@ export function DashboardPage() {
   const savedLeadsHook = useSavedLeads();
 
   const runSearch = useCallback(
-    async (ind: string, loc: string, svc: string) => {
+    async (ind: string, loc: string, svc: string, rad: number) => {
       setScanning(true);
       setSearchError(null);
       setIndustry(ind);
       setLocation(loc);
       setServiceType(svc);
+      setRadius(rad);
       try {
-        const result = await searchBusinesses(ind, loc, svc);
+        // searchBusinesses() always succeeds — it falls back to mock data if API is unavailable
+        const result = await searchBusinesses(ind, loc, svc, rad);
         setBusinesses(result.businesses);
         setDataSource(result.source);
       } catch (err) {
+        // Unexpected error — should not happen, but handle gracefully
         const msg =
           err instanceof Error
             ? err.message
@@ -104,13 +110,13 @@ export function DashboardPage() {
   );
 
   const handleSearch = useCallback(
-    async (ind: string, loc: string, svc: string) => {
+    async (ind: string, loc: string, svc: string, rad: number) => {
       if (!credits.hasCredits) {
         setShowUpgradeModal(true);
         return;
       }
       credits.useCredit();
-      await runSearch(ind, loc, svc);
+      await runSearch(ind, loc, svc, rad);
     },
     [credits, runSearch],
   );
@@ -121,10 +127,11 @@ export function DashboardPage() {
         DEFAULT_SEARCH.industry,
         DEFAULT_SEARCH.location,
         DEFAULT_SEARCH.serviceType,
+        radius,
       );
       setInitialized(true);
     }
-  }, [initialized, runSearch]);
+  }, [initialized, radius, runSearch]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -134,8 +141,8 @@ export function DashboardPage() {
   }, []);
 
   const filtered = useMemo(
-    () => filterBusinesses(businesses, filters, search),
-    [businesses, filters, search],
+    () => filterBusinesses(businesses, filters, search, sortBy),
+    [businesses, filters, search, sortBy],
   );
   const feedEvents = useMemo(
     () => buildFeedFromBusinesses(businesses),
@@ -209,6 +216,7 @@ export function DashboardPage() {
           loading={scanning}
           initialIndustry={industry}
           initialLocation={location}
+          initialRadius={radius}
           initialServiceType={serviceType}
         />
 
@@ -273,6 +281,18 @@ export function DashboardPage() {
                     setFilters({ active: key })
                   }
                 />
+                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 rounded-lg border border-[#1F1F30] bg-[#16161D] px-2.5 py-1 text-xs text-[#82829A]">
+                  <span className="font-medium text-[#EAEAF0]">Sort</span>
+                  <select
+                    value={sortBy}
+                    onChange={(event) => setSortBy(event.target.value as BusinessSortKey)}
+                    className="rounded-md border border-[#1F1F30] bg-[#0C0C10] px-2 py-1 text-xs text-[#EAEAF0] outline-none"
+                  >
+                    <option value="opportunity">Best opportunity</option>
+                    <option value="distance">Closest distance</option>
+                  </select>
+                </div>
                 <div className="flex shrink-0 rounded-lg border border-[#1F1F30] bg-[#16161D] p-0.5 text-xs">
                   {(["List", "Cards"] as const).map((label) => {
                     const active = label === "List" ? listView : !listView;
@@ -292,6 +312,7 @@ export function DashboardPage() {
                     );
                   })}
                 </div>
+              </div>
               </div>
 
               {!scanning && businesses.length > 0 && (

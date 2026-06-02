@@ -141,7 +141,10 @@ export function BusinessCard({
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <span className="font-semibold leading-snug text-[#EAEAF0]">{business.name}</span>
-                <span className="ml-2 text-xs text-[#424258]">{business.industry}</span>
+                <span className="ml-2 text-xs text-[#424258]">
+                  {business.industry}
+                  {business.distance && business.distance !== '—' ? ` · ${business.distance}` : ''}
+                </span>
               </div>
               <div className="flex shrink-0 items-start gap-1.5">
                 {savedLeadsHook && <SaveButton business={business} savedLeadsHook={savedLeadsHook} />}
@@ -220,11 +223,14 @@ export function BusinessCard({
       </div>
 
       {/* Meta */}
-      <div className="mt-2.5 flex items-center gap-2">
+      <div className="mt-2.5 flex flex-wrap items-center gap-2">
         <StarRating rating={business.googleRating} reviewCount={business.reviewCount} />
         {!business.footprint.websiteExists
           ? <span className="text-[11px] font-semibold text-[#D95555]">no website</span>
           : <span className="text-[11px] text-[#3DCC6E]">has site</span>}
+        {business.distance && business.distance !== '—' && (
+          <span className="text-[11px] text-[#888]">{business.distance}</span>
+        )}
       </div>
 
       {/* Insight */}
