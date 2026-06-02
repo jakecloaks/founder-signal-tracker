@@ -73,7 +73,10 @@ export function BusinessDetailModal({ business, onClose, savedLeadsHook }: Busin
             {/* Name + meta */}
             <div className="min-w-0 flex-1">
               <h2 className="text-base font-bold tracking-tight text-[#FAFAF9]">{business.name}</h2>
-              <p className="text-sm text-[#888]">{business.industry} · {business.location}</p>
+              <p className="text-sm text-[#888]">
+                {business.industry} · {business.location}
+                {business.distance && business.distance !== '—' ? ` · ${business.distance}` : ''}
+              </p>
               <p className="mt-0.5 text-xs text-[#555]">{business.address}</p>
             </div>
 

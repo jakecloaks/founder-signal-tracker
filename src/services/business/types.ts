@@ -6,6 +6,7 @@ export interface BusinessSearchParams {
   industry: string
   location: string
   serviceType: string
+  radiusKm?: number
 }
 
 export interface BusinessSearchResult {

@@ -63,6 +63,7 @@ export function DashboardPage() {
   const [industry, setIndustry] = useState(DEFAULT_SEARCH.industry);
   const [location, setLocation] = useState(DEFAULT_SEARCH.location);
   const [serviceType, setServiceType] = useState(DEFAULT_SEARCH.serviceType);
+  const [radius, setRadius] = useState(10);
   const [businesses, setBusinesses] = useState<LocalBusiness[]>([]);
   const [dataSource, setDataSource] = useState<BusinessDataSource>("mock");
   const [search, setSearch] = useState("");
@@ -79,15 +80,16 @@ export function DashboardPage() {
   const savedLeadsHook = useSavedLeads();
 
   const runSearch = useCallback(
-    async (ind: string, loc: string, svc: string) => {
+    async (ind: string, loc: string, svc: string, rad: number) => {
       setScanning(true);
       setSearchError(null);
       setIndustry(ind);
       setLocation(loc);
       setServiceType(svc);
+      setRadius(rad);
       try {
         // searchBusinesses() always succeeds — it falls back to mock data if API is unavailable
-        const result = await searchBusinesses(ind, loc, svc);
+        const result = await searchBusinesses(ind, loc, svc, rad);
         setBusinesses(result.businesses);
         setDataSource(result.source);
       } catch (err) {
@@ -106,13 +108,13 @@ export function DashboardPage() {
   );
 
   const handleSearch = useCallback(
-    async (ind: string, loc: string, svc: string) => {
+    async (ind: string, loc: string, svc: string, rad: number) => {
       if (!credits.hasCredits) {
         setShowUpgradeModal(true);
         return;
       }
       credits.useCredit();
-      await runSearch(ind, loc, svc);
+      await runSearch(ind, loc, svc, rad);
     },
     [credits, runSearch],
   );
@@ -123,10 +125,11 @@ export function DashboardPage() {
         DEFAULT_SEARCH.industry,
         DEFAULT_SEARCH.location,
         DEFAULT_SEARCH.serviceType,
+        radius,
       );
       setInitialized(true);
     }
-  }, [initialized, runSearch]);
+  }, [initialized, radius, runSearch]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -211,6 +214,7 @@ export function DashboardPage() {
           loading={scanning}
           initialIndustry={industry}
           initialLocation={location}
+          initialRadius={radius}
           initialServiceType={serviceType}
         />
 

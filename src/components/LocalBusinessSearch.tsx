@@ -3,10 +3,16 @@ import { Loader2, MapPin, Search, ChevronDown } from "lucide-react";
 import { SUGGESTED_SEARCHES, TARGET_INDUSTRIES } from "../services/business";
 
 interface LocalBusinessSearchProps {
-  onSearch: (industry: string, location: string, serviceType: string) => void;
+  onSearch: (
+    industry: string,
+    location: string,
+    serviceType: string,
+    radiusKm: number,
+  ) => void;
   loading?: boolean;
   initialIndustry?: string;
   initialLocation?: string;
+  initialRadius?: number;
   initialServiceType?: string;
 }
 
@@ -15,14 +21,16 @@ export function LocalBusinessSearch({
   loading,
   initialIndustry = "dentists",
   initialLocation = "Salt Lake City, UT",
+  initialRadius = 10,
 }: LocalBusinessSearchProps) {
   const [industry, setIndustry] = useState(initialIndustry);
   const [location, setLocation] = useState(initialLocation);
+  const [radius, setRadius] = useState(initialRadius);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!industry.trim() || !location.trim() || loading) return;
-    onSearch(industry.trim(), location.trim(), "website redesign");
+    onSearch(industry.trim(), location.trim(), "website redesign", radius);
   }
 
   const inputClass =
@@ -67,6 +75,23 @@ export function LocalBusinessSearch({
               className={inputClass}
             />
           </div>
+          {/* Radius selector */}
+          <div className="relative flex-shrink-0 min-w-[120px]">
+            <select
+              aria-label="Search radius in kilometers"
+              value={radius}
+              onChange={(e) => setRadius(Number(e.target.value))}
+              disabled={loading}
+              className={`${inputClass} appearance-none cursor-pointer pr-8`}
+            >
+              <option value={1}>1 km</option>
+              <option value={5}>5 km</option>
+              <option value={10}>10 km</option>
+              <option value={25}>25 km</option>
+              <option value={50}>50 km</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#555]" />
+          </div>
           {/* Fixed service label */}
           <div className="hidden items-center gap-2 rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] px-3 py-2.5 sm:flex shrink-0">
             <span className="text-xs text-[#555]">Service:</span>
@@ -104,7 +129,7 @@ export function LocalBusinessSearch({
             onClick={() => {
               setIndustry(s.industry);
               setLocation(s.location);
-              onSearch(s.industry, s.location, "website redesign");
+              onSearch(s.industry, s.location, "website redesign", radius);
             }}
             className="rounded-md border border-[#2A2A2A] bg-[#1A1A1A] px-2 py-1 text-[11px] font-medium text-[#888] transition-colors hover:border-[#333] hover:text-[#FAFAF9] disabled:opacity-40"
           >
