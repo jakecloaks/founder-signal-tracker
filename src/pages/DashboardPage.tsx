@@ -86,10 +86,12 @@ export function DashboardPage() {
       setLocation(loc);
       setServiceType(svc);
       try {
+        // searchBusinesses() always succeeds — it falls back to mock data if API is unavailable
         const result = await searchBusinesses(ind, loc, svc);
         setBusinesses(result.businesses);
         setDataSource(result.source);
       } catch (err) {
+        // Unexpected error — should not happen, but handle gracefully
         const msg =
           err instanceof Error
             ? err.message

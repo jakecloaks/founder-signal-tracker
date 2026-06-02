@@ -1,4 +1,5 @@
 import { placesApiBusinessProvider } from './placesApiBusinessProvider'
+import { mockBusinessProvider } from './mockBusinessProvider'
 import type { BusinessSearchParams, BusinessSearchResult } from './types'
 
 export const DEFAULT_SEARCH = { industry: 'dentists', location: 'Salt Lake City, UT', serviceType: 'website redesign' }
@@ -26,8 +27,12 @@ export const TARGET_INDUSTRIES = [
 ]
 
 /**
- * Primary search — always uses Google Places API.
- * Throws if the API key is not configured or if the search fails.
+ * Smart search with automatic fallback:
+ * 1. Checks if Google Places API is configured and available
+ * 2. If available, uses real Places data
+ * 3. If unavailable or request fails, falls back to demo/mock data
+ * 
+ * Never throws — always returns results (real or mock).
  */
 export async function searchBusinesses(
   industry: string,
@@ -35,7 +40,27 @@ export async function searchBusinesses(
   serviceType = 'website redesign'
 ): Promise<BusinessSearchResult> {
   const params: BusinessSearchParams = { industry, location, serviceType }
-  return placesApiBusinessProvider.search(params)
+  
+  // Try Places API first
+  try {
+    const isAvailable = await placesApiBusinessProvider.isAvailable()
+    if (isAvailable) {
+      try {
+        const result = await placesApiBusinessProvider.search(params)
+        return result
+      } catch (err) {
+        // Places request failed — fall back to mock
+        console.warn('[search] Places API request failed, falling back to mock:', err instanceof Error ? err.message : String(err))
+        return mockBusinessProvider.search(params)
+      }
+    }
+  } catch (err) {
+    // Health check failed — fall back to mock
+    console.warn('[search] Cannot reach API server, falling back to mock:', err instanceof Error ? err.message : String(err))
+  }
+  
+  // API unavailable (no key or server down) — use mock
+  return mockBusinessProvider.search(params)
 }
 
-export { placesApiBusinessProvider }
+export { placesApiBusinessProvider, mockBusinessProvider }
